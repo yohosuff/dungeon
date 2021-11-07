@@ -1,1 +1,3 @@
-# dungeon
+- node.js
+- typescript
+- socket.io
