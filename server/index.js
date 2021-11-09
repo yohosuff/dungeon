@@ -1,14 +1,5 @@
-import { Server } from 'socket.io';
+import { Game } from './game.js';
 
-const io = new Server({
-    serveClient: false,
-    cors: {
-        origin: "http://localhost:4200"
-    }
-});
+const game = new Game();
 
-io.on("connection", socket => {
-    console.log('got a connection!', socket.id);
-});
-
-io.listen(3000);
+game.start();

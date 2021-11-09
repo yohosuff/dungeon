@@ -1,1 +1,6 @@
-<div class="player" [style.left]="(position.x * 32) + 'px'" [style.top]="(position.y * 32) + 'px'"></div>
+<div 
+  class="player" 
+  [style.left]="(position.x * 32) + 'px'" 
+  [style.top]="(position.y * 32) + 'px'" 
+  (transitionend)="onTransitionEnd()"
+></div>
