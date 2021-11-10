@@ -32,9 +32,9 @@ export class AppComponent {
       console.log('connected');
     });
 
-    socket.on('update-position', position => {
-      this.position.x = position.x;
-      this.position.y = position.y;
+    socket.on('update-position', playerDto => {
+      this.position.x = playerDto.position.x;
+      this.position.y = playerDto.position.y;
       this.waitingForServer = false;
       this.handleQueuedMove();
     });
