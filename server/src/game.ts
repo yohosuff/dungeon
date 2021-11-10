@@ -1,8 +1,10 @@
 import { Server } from 'socket.io';
+import { Player } from './player.js';
 
 export class Game {
 
     position = {x: 0, y: 0};
+    players: Player[];
 
     start() {
         const io = new Server({
@@ -14,8 +16,10 @@ export class Game {
 
         io.on("connection", socket => {
 
-            console.log('connection', socket.id)
-            
+            const player = new Player(socket);
+
+            console.log('connection', socket.id);
+
             io.emit('update-position', this.position);
 
             socket.on('move', async direction => {
@@ -31,11 +35,11 @@ export class Game {
                 }
 
                 // simulate lag
-                // await new Promise(resolve => setTimeout(resolve, 150));
+                // await new Promise(resolve => setTimeout(resolve, 500));
 
                 // simulate collision
                 // if (Math.random() > 0.75) { this.position = originalPosition; }
-                
+
                 io.emit('update-position', this.position);
             });
         });
