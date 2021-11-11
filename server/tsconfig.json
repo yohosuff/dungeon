@@ -4,5 +4,12 @@
     "outDir": "out",
     "moduleResolution": "node"
   },
-  "include": ["src/index.ts"]
+  "include": [
+    "src/index.ts"
+  ],
+  "references": [
+    {
+      "path": "../shared"
+    }
+  ]
 }

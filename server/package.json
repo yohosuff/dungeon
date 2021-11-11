@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "rimraf out && tsc",
+    "build": "rimraf out && tsc --build --clean && tsc --build",
     "serve": "cd out && node --experimental-specifier-resolution=node index.js",
     "start": "npm run build && npm run serve"
   },

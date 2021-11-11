@@ -1,7 +1,6 @@
 import { Socket } from "socket.io";
 import { Game } from "./Game";
-import { PlayerDto } from "./PlayerDto";
-import { Position } from "./Position";
+import { PlayerDto, Position } from "../../shared/out";
 
 export class Player {
 

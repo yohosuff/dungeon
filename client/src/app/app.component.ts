@@ -1,6 +1,6 @@
 import { Component, HostListener } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
-import { Position } from './position';
+import { PlayerDto, Position } from '../../../shared/out';
 
 @Component({
   selector: 'app-root',
@@ -16,8 +16,10 @@ export class AppComponent {
   input: Map<string, boolean>;
   moveStart: number;
   waitingForServer: boolean;
+  players: PlayerDto[];
 
   constructor() {
+    this.players = [];
     this.waitingForServer = false;
     this.moveStart = performance.now();
     this.input = new Map<string, boolean>();

@@ -8,7 +8,7 @@ export class Game {
 
     constructor() {
         this.players = [];
-        
+
         this.io = new Server({
             serveClient: false,
             cors: {
@@ -20,13 +20,14 @@ export class Game {
     start() {
         this.setupListeners();
         this.io.listen(3000);
+        console.log('server is up!');
     }
 
     setupListeners() {
         this.io.on("connection", socket => {
             console.log('connection', socket.id);
             const player = new Player(socket, this);
-            this.players.push(player);            
+            this.players.push(player);
         });
     }
 

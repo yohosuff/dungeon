@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "ES2021",
+        "outDir": "out",
+        "moduleResolution": "node",
+        "declaration": true,
+        "declarationMap": true,
+        "rootDir": "src",
+        "composite": true
+    },
+    "include": [
+        "./*.ts"
+    ],
+    "references": [] // * Any project that is referenced must itself have a `references` array (which may be empty).
+}
