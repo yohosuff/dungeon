@@ -18,26 +18,69 @@ export class Player {
     }
 
     setupListeners() {
-        this.socket.on('move', async direction => {
+        const socket = this.socket;
+        
+        socket.on('request-players', () => {
+            const playerDtos = this.game.players.map(player => player.getDto());
+            socket.emit('players', playerDtos);
+        });
 
-            // use this to resolve invalid move
-            const originalPosition = {...this.position};
+        socket.on('move', async direction => {
+
+            const newPosition = {...this.position};
 
             switch(direction) {
-                case 'right': this.position.x += 1; break;
-                case 'left': this.position.x -= 1; break;
-                case 'down': this.position.y += 1; break;
-                case 'up': this.position.y -= 1; break;
+                case 'right': newPosition.x += 1; break;
+                case 'left': newPosition.x -= 1; break;
+                case 'down': newPosition.y += 1; break;
+                case 'up': newPosition.y -= 1; break;
             }
 
-            // simulate lag
-            // await new Promise(resolve => setTimeout(resolve, 500));
+            const blocked = this.game.players.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
 
-            // simulate collision
-            // if (Math.random() > 0.75) { this.position = originalPosition; }
+            if(blocked) {
+                console.log('blocked!');
+                // await new Promise(resolve => setTimeout(resolve, 200)); // simulate lag
+            } else {
+                this.position = newPosition;
+            }
 
             this.emitPosition();
+
+            
+            
         });
+
+        socket.on("disconnect", () => {
+            this.removePlayer(this);
+            socket.broadcast.emit('player-left', socket.id);
+        });
+    }
+
+    removePlayer(player: Player) {
+        const index = this.game.players.indexOf(player);
+        
+        if(index === -1) {
+            console.log('did not find player to remove');
+            return;
+        }
+
+        this.game.players.splice(index, 1);
+
+        console.log('removed player', player.socket.id);
+    }
+
+    removePlayerWithSocket(socket: Socket) {
+        console.log('removing player');
+        for(let i = this.game.players.length - 1; i >= 0; --i) {
+            const player = this.game.players[i];
+            if(player.socket === socket) {
+                this.game.players.splice(i, 1);
+                console.log('removed player');
+                return;
+            }
+        }
+        console.log('did not remove player');
     }
 
     emitPosition() {

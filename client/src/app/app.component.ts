@@ -1,6 +1,6 @@
 import { Component, HostListener } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
-import { PlayerDto, Position } from '../../../shared/out';
+import { PlayerDto } from '../../../shared/out';
 
 @Component({
   selector: 'app-root',
@@ -10,50 +10,86 @@ import { PlayerDto, Position } from '../../../shared/out';
 export class AppComponent {
 
   socket: Socket;
-  position: Position;
-  transitioning: boolean;
-  queuedMove?: string;
+  
   input: Map<string, boolean>;
-  moveStart: number;
+
+  transitioning: boolean;
   waitingForServer: boolean;
-  players: PlayerDto[];
+  
+  me: PlayerDto;
+  otherPlayers: PlayerDto[];
+  autoMoveRight: boolean;
 
   constructor() {
-    this.players = [];
+    this.autoMoveRight = false;
+    this.me = new PlayerDto();
+    this.otherPlayers = [];
     this.waitingForServer = false;
-    this.moveStart = performance.now();
-    this.input = new Map<string, boolean>();
     this.transitioning = false;
-    this.position = new Position(0, 0);
+    this.input = new Map<string, boolean>();
     
     const socket = io('http://localhost:3000');
-    
+
     this.socket = socket;
-    
+
     socket.on("connect", () => {
       console.log('connected');
+      socket.emit('request-players');
     });
 
-    socket.on('update-position', playerDto => {
-      this.position.x = playerDto.position.x;
-      this.position.y = playerDto.position.y;
-      this.waitingForServer = false;
-      this.handleQueuedMove();
+    socket.on('players', (players: PlayerDto[]) => {
+      console.log('got players!', players);
+
+      for(let player of players) {
+        if(player.id === socket.id) {
+          this.me = player;
+          continue;
+        }
+
+        if(this.otherPlayers.some(p => p.id === player.id)) {
+          continue;
+        }
+
+        this.otherPlayers.push(player);
+      }
+    });
+
+    socket.on('update-position', (playerDto: PlayerDto) => {
+
+      if (playerDto.id === socket.id) {
+        this.waitingForServer = false;
+        return;
+      }
+
+      let player = this.otherPlayers.find(player => player.id === playerDto.id);
+
+      if (!player) {
+        player = playerDto;
+        this.otherPlayers.push(player);
+      }
+
+      player.position = playerDto.position;
+    });
+
+    socket.on('player-left', id => {
+      this.removePlayer(this.otherPlayers, id);
     });
 
     window.requestAnimationFrame(this.loop.bind(this));
   }
 
-  handleQueuedMove() {
-    if(this.queuedMove) {
-      this.move(this.queuedMove);
-      this.queuedMove = undefined;
+  removePlayer(players: PlayerDto[], id: string) {
+    for (let i = players.length - 1; i >= 0; --i) {
+      const player = players[i];
+      if (player.id === id) {
+        players.splice(i, 1);
+        break;
+      }
     }
   }
 
   onTransitionEnd() {
     this.transitioning = false;
-    this.handleQueuedMove();
   }
 
   loop(timeStamp: DOMHighResTimeStamp) {
@@ -62,41 +98,46 @@ export class AppComponent {
   }
 
   handleInput() {
-    const right = !!this.input.get('KeyD') || !!this.input.get('ArrowRight');
-    const left = !!this.input.get('KeyA') || !!this.input.get('ArrowLeft');
-    const down = !!this.input.get('KeyS') || !!this.input.get('ArrowDown');
-    const up = !!this.input.get('KeyW') || !!this.input.get('ArrowUp');
-    
-    if(right) {
+    const right = this.input.get('KeyD') || this.input.get('ArrowRight');
+    const left = this.input.get('KeyA') || this.input.get('ArrowLeft');
+    const down = this.input.get('KeyS') || this.input.get('ArrowDown');
+    const up = this.input.get('KeyW') || this.input.get('ArrowUp');
+
+    if (right || this.autoMoveRight) {
       this.move('right');
-    } else if(left) {
+    } else if (left) {
       this.move('left');
-    } else if(down) {
+    } else if (down) {
       this.move('down');
-    } else if(up) {
+    } else if (up) {
       this.move('up');
     }
   }
 
   move(direction: string) {
-    if(this.transitioning || this.waitingForServer) {
-      if(performance.now() - this.moveStart > 150) {
-        this.queuedMove = direction;
-      }
+    
+    if (this.transitioning || this.waitingForServer) {
       return;
     }
 
-    this.transitioning = true;
-    this.waitingForServer = true;
-    this.moveStart = performance.now();
+    const newPosition = {...this.me.position};
 
     switch (direction) {
-      case 'right': this.position.x += 1; break;
-      case 'left': this.position.x -= 1; break;
-      case 'down': this.position.y += 1; break;
-      case 'up': this.position.y -= 1; break;
+      case 'right': newPosition.x += 1; break;
+      case 'left': newPosition.x -= 1; break;
+      case 'down': newPosition.y += 1; break;
+      case 'up': newPosition.y -= 1; break;
     }
 
+    const blocked = this.otherPlayers.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
+
+    if(blocked) {
+      return;
+    }
+    
+    this.me.position = newPosition;
+    this.transitioning = true;
+    this.waitingForServer = true;
     this.socket.emit('move', direction);
   }
 
@@ -108,5 +149,14 @@ export class AppComponent {
   @HostListener('document:keyup', ['$event'])
   onKeyUp(event: KeyboardEvent) {
     this.input.set(event.code, false);
+
+    if(event.code === 'KeyP') {
+      console.log('other players', this.otherPlayers);
+      console.log('me', this.me);
+    }
+
+    if(event.code === 'KeyM') {
+      this.autoMoveRight = !this.autoMoveRight;
+    }
   }
 }

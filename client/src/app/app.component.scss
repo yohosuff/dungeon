@@ -1,8 +1,8 @@
 .player {
     border: 1px solid white;
+    box-sizing: border-box;
     width: 32px;
     height: 32px;
     position: absolute;
     transition: left 200ms linear, top 200ms linear;
 }
-

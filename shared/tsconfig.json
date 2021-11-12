@@ -9,7 +9,7 @@
         "composite": true
     },
     "include": [
-        "./*.ts"
+        "src/*.ts"
     ],
     "references": [] // * Any project that is referenced must itself have a `references` array (which may be empty).
 }

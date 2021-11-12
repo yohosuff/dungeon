@@ -1,6 +1,14 @@
-<div 
-  class="player" 
-  [style.left]="(position.x * 32) + 'px'" 
-  [style.top]="(position.y * 32) + 'px'" 
+<div
+  *ngFor="let player of otherPlayers"
+  class="player"
+  [style.left]="(player.position.x * 32) + 'px'"
+  [style.top]="(player.position.y * 32) + 'px'"
+></div>
+
+<div
+  *ngIf="me.id"
+  class="player"
+  [style.left]="(me.position.x * 32) + 'px'"
+  [style.top]="(me.position.y * 32) + 'px'"
   (transitionend)="onTransitionEnd()"
 ></div>
