@@ -1,28 +1,44 @@
 import { Socket } from "socket.io";
 import { Game } from "./Game";
-import { PlayerDto, Position } from "../../shared/out";
+import { HelloDto, PlayerDto, Position } from "../../shared";
 
 export class Player {
 
     socket: Socket;
     game: Game;
-
     position: Position;
 
     constructor(socket: Socket, game: Game) {
         this.socket = socket;
         this.game = game;
-        this.position = new Position(0, 0);
+        this.setPosition();
+        this.game.players.push(this);
         this.setupListeners();
         this.emitPosition();
+    }
+
+    setPosition() {
+        const positions = this.game.players.reduce((set, player) => {
+            set.add(`${player.position.x},${player.position.y}`);
+            return set;
+        }, new Set<string>());
+        
+        const position = new Position(0, 0);
+
+        while(positions.has(`${position.x},${position.y}`)) {
+            position.x += 1;
+        }
+
+        this.position = position;
     }
 
     setupListeners() {
         const socket = this.socket;
         
-        socket.on('request-players', () => {
-            const playerDtos = this.game.players.map(player => player.getDto());
-            socket.emit('players', playerDtos);
+        socket.on('hello', () => {
+            const helloDto = new HelloDto();
+            helloDto.players = this.game.players.map(player => player.getDto());
+            socket.emit('hello', helloDto);
         });
 
         socket.on('move', async direction => {

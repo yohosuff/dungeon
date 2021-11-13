@@ -1,15 +1,9 @@
 {
   "compilerOptions": {
     "target": "ES2021",
-    "outDir": "out",
     "moduleResolution": "node"
   },
   "include": [
     "src/index.ts"
-  ],
-  "references": [
-    {
-      "path": "../shared"
-    }
   ]
 }

@@ -1,6 +1,6 @@
 import { Component, HostListener } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
-import { PlayerDto } from '../../../shared/out';
+import { HelloDto, PlayerDto } from '../../../shared';
 
 @Component({
   selector: 'app-root',
@@ -34,13 +34,15 @@ export class AppComponent {
 
     socket.on("connect", () => {
       console.log('connected');
-      socket.emit('request-players');
+      socket.emit('hello');
     });
 
-    socket.on('players', (players: PlayerDto[]) => {
-      console.log('got players!', players);
+    socket.on('hello', (helloDto: HelloDto) => {
+      console.log('got hello back from server', helloDto);
 
-      for(let player of players) {
+      this.otherPlayers = [];
+
+      for(let player of helloDto.players) {
         if(player.id === socket.id) {
           this.me = player;
           continue;

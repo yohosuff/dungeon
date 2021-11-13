@@ -1,4 +1,4 @@
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { Player } from './Player';
 
 export class Game {
@@ -28,8 +28,7 @@ export class Game {
 
         io.on("connection", socket => {
             console.log('connection', socket.id);
-            const player = new Player(socket, this);
-            this.players.push(player);
+            new Player(socket, this);
         });
     }
 
