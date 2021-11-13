@@ -1,6 +1,6 @@
 import { Component, HostListener } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
-import { HelloDto, PlayerDto } from '../../../shared';
+import { DungeonEvent, HelloDto, PlayerDto } from '../../../shared';
 
 @Component({
   selector: 'app-root',
@@ -32,12 +32,12 @@ export class AppComponent {
 
     this.socket = socket;
 
-    socket.on("connect", () => {
+    socket.on(DungeonEvent.Connect, () => {
       console.log('connected');
-      socket.emit('hello');
+      socket.emit(DungeonEvent.Hello);
     });
 
-    socket.on('hello', (helloDto: HelloDto) => {
+    socket.on(DungeonEvent.Hello, (helloDto: HelloDto) => {
       console.log('got hello back from server', helloDto);
 
       this.otherPlayers = [];
@@ -56,7 +56,7 @@ export class AppComponent {
       }
     });
 
-    socket.on('update-position', (playerDto: PlayerDto) => {
+    socket.on(DungeonEvent.UpdatePosition, (playerDto: PlayerDto) => {
 
       if (playerDto.id === socket.id) {
         this.waitingForServer = false;
@@ -73,7 +73,7 @@ export class AppComponent {
       player.position = playerDto.position;
     });
 
-    socket.on('player-left', id => {
+    socket.on(DungeonEvent.PlayerLeft, id => {
       this.removePlayer(this.otherPlayers, id);
     });
 
@@ -140,7 +140,7 @@ export class AppComponent {
     this.me.position = newPosition;
     this.transitioning = true;
     this.waitingForServer = true;
-    this.socket.emit('move', direction);
+    this.socket.emit(DungeonEvent.Move, direction);
   }
 
   @HostListener('document:keydown', ['$event'])

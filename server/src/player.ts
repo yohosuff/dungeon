@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 import { Game } from "./Game";
-import { HelloDto, PlayerDto, Position } from "../../shared";
+import { DungeonEvent, HelloDto, PlayerDto, Position } from "../../shared";
 
 export class Player {
 
@@ -35,13 +35,13 @@ export class Player {
     setupListeners() {
         const socket = this.socket;
         
-        socket.on('hello', () => {
+        socket.on(DungeonEvent.Hello, () => {
             const helloDto = new HelloDto();
             helloDto.players = this.game.players.map(player => player.getDto());
-            socket.emit('hello', helloDto);
+            socket.emit(DungeonEvent.Hello, helloDto);
         });
 
-        socket.on('move', async direction => {
+        socket.on(DungeonEvent.Move, async direction => {
 
             const newPosition = {...this.position};
 
@@ -61,15 +61,12 @@ export class Player {
                 this.position = newPosition;
             }
 
-            this.emitPosition();
-
-            
-            
+            this.emitPosition();            
         });
 
-        socket.on("disconnect", () => {
+        socket.on(DungeonEvent.Disconnect, () => {
             this.removePlayer(this);
-            socket.broadcast.emit('player-left', socket.id);
+            socket.broadcast.emit(DungeonEvent.PlayerLeft, socket.id);
         });
     }
 
@@ -100,7 +97,7 @@ export class Player {
     }
 
     emitPosition() {
-        this.game.io.emit('update-position', this.getDto());
+        this.game.io.emit(DungeonEvent.UpdatePosition, this.getDto());
     }
 
     getDto() {

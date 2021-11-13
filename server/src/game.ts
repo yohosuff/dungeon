@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import { Player } from './Player';
+import { DungeonEvent } from '../../shared';
 
 export class Game {
 
@@ -26,7 +27,7 @@ export class Game {
     setupListeners() {
         const io = this.io;
 
-        io.on("connection", socket => {
+        io.on(DungeonEvent.Connection, socket => {
             console.log('connection', socket.id);
             new Player(socket, this);
         });
