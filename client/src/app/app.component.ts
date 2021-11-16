@@ -1,6 +1,10 @@
 import { Component, HostListener } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { io, Socket } from 'socket.io-client';
-import { DungeonEvent, HelloDto, PlayerDto } from '../../../shared';
+import { DungeonEvent } from '../../../shared';
+import { Game } from './game';
+import { Modal } from 'bootstrap';
+import { Constants } from './constants';
 
 @Component({
   selector: 'app-root',
@@ -9,156 +13,129 @@ import { DungeonEvent, HelloDto, PlayerDto } from '../../../shared';
 })
 export class AppComponent {
 
-  socket: Socket;
-  
-  input: Map<string, boolean>;
+  form: FormGroup;
+  anonymousSocket: Socket;
+  anonymousSocketConnected: boolean;
 
-  transitioning: boolean;
-  waitingForServer: boolean;
-  
-  me: PlayerDto;
-  otherPlayers: PlayerDto[];
-  autoMoveRight: boolean;
+  authenticatedSocket?: Socket;
+  authenticatedSocketConnected: boolean;
 
-  constructor() {
-    this.autoMoveRight = false;
-    this.me = new PlayerDto();
-    this.otherPlayers = [];
-    this.waitingForServer = false;
-    this.transitioning = false;
-    this.input = new Map<string, boolean>();
+  game: Game;
+
+  constructor(
+    private _formBuilder: FormBuilder
+  ) {
+    this.form = this._formBuilder.group({
+      email: ['', Validators.email],
+      password: ['', Validators.required],
+    });
+
+    this.anonymousSocketConnected = false;
+    this.authenticatedSocketConnected = false;
     
-    const socket = io('http://localhost:3000');
+    this.anonymousSocket = io(`${Constants.BaseUrl}/anonymous`);
 
-    this.socket = socket;
-
-    socket.on(DungeonEvent.Connect, () => {
-      console.log('connected');
-      socket.emit(DungeonEvent.Hello);
+    this.anonymousSocket.on(DungeonEvent.Connect, () => {
+      console.log('connected!');
+      this.anonymousSocketConnected = true;
+      // check for stored token and attempt to use it to establish authenticated socket connection
+      // if it isn't there, do nothing and wait for user to login
     });
 
-    socket.on(DungeonEvent.Hello, (helloDto: HelloDto) => {
-      console.log('got hello back from server', helloDto);
-
-      this.otherPlayers = [];
-
-      for(let player of helloDto.players) {
-        if(player.id === socket.id) {
-          this.me = player;
-          continue;
-        }
-
-        if(this.otherPlayers.some(p => p.id === player.id)) {
-          continue;
-        }
-
-        this.otherPlayers.push(player);
-      }
+    this.anonymousSocket.on(DungeonEvent.LoginFailed, () => {
+      console.log('login failed');
     });
 
-    socket.on(DungeonEvent.UpdatePosition, (playerDto: PlayerDto) => {
-
-      if (playerDto.id === socket.id) {
-        this.waitingForServer = false;
-        return;
-      }
-
-      let player = this.otherPlayers.find(player => player.id === playerDto.id);
-
-      if (!player) {
-        player = playerDto;
-        this.otherPlayers.push(player);
-      }
-
-      player.position = playerDto.position;
+    this.anonymousSocket.on(DungeonEvent.EmailAlreadyTaken, () => {
+      console.log('email already taken');
     });
 
-    socket.on(DungeonEvent.PlayerLeft, id => {
-      this.removePlayer(this.otherPlayers, id);
+    this.anonymousSocket.on(DungeonEvent.LoginSuccessful, token => {
+      console.log('login success', token);
+      localStorage.setItem('DungeonToken', token);
+      this.createGame(token);
     });
 
-    window.requestAnimationFrame(this.loop.bind(this));
+    this.anonymousSocket.on(DungeonEvent.Registered, token => {
+      console.log('registered', token);
+      localStorage.setItem('DungeonToken', token);
+      this.createGame(token);
+    });
+
+    this.anonymousSocket.on(DungeonEvent.Disconnect, () => {
+      console.log('anonymous socket disconnected');
+      this.anonymousSocketConnected = false;
+    });
+
+    this.game = new Game();
   }
 
-  removePlayer(players: PlayerDto[], id: string) {
-    for (let i = players.length - 1; i >= 0; --i) {
-      const player = players[i];
-      if (player.id === id) {
-        players.splice(i, 1);
-        break;
-      }
-    }
+  createGame(token: string) {
+    this.game.authenticatedSocketConnected$.subscribe(authenticatedSocketConnected => {
+      this.authenticatedSocketConnected = authenticatedSocketConnected;
+      this.anonymousSocket.disconnect();
+    });
+
+    this.game.connect(token);
+  }
+
+  getModalInstance(id: string) {
+    const modalElement = document.getElementById(id) as Element;
+    const modal = Modal.getInstance(modalElement) as Modal;
+    return modal;
+  }
+
+  showRegisterModal() {
+    const registerModalElement = document.getElementById('registerModal') as Element;
+    const registerModal = new Modal(registerModalElement);
+    this.form.reset();
+    registerModal.show();
+  }
+
+  register() {
+    const email = this.form.get('email')?.value;
+    const password = this.form.get('password')?.value;
+    this.anonymousSocket.emit(DungeonEvent.Register, { email, password });
+    this.getModalInstance('registerModal').hide();
+  }
+
+  showLoginModal() {
+    const loginModalElement = document.getElementById('loginModal') as Element;
+    const loginModal = new Modal(loginModalElement);
+    this.form.reset();
+    loginModal.show();
+  }
+
+  login() {
+    const email = this.form.get('email')?.value;
+    const password = this.form.get('password')?.value;
+    this.anonymousSocket.emit(DungeonEvent.Login, { email, password });
+    this.getModalInstance('loginModal').hide();
   }
 
   onTransitionEnd() {
-    this.transitioning = false;
-  }
-
-  loop(timeStamp: DOMHighResTimeStamp) {
-    this.handleInput();
-    window.requestAnimationFrame(this.loop.bind(this));
-  }
-
-  handleInput() {
-    const right = this.input.get('KeyD') || this.input.get('ArrowRight');
-    const left = this.input.get('KeyA') || this.input.get('ArrowLeft');
-    const down = this.input.get('KeyS') || this.input.get('ArrowDown');
-    const up = this.input.get('KeyW') || this.input.get('ArrowUp');
-
-    if (right || this.autoMoveRight) {
-      this.move('right');
-    } else if (left) {
-      this.move('left');
-    } else if (down) {
-      this.move('down');
-    } else if (up) {
-      this.move('up');
-    }
-  }
-
-  move(direction: string) {
-    
-    if (this.transitioning || this.waitingForServer) {
-      return;
-    }
-
-    const newPosition = {...this.me.position};
-
-    switch (direction) {
-      case 'right': newPosition.x += 1; break;
-      case 'left': newPosition.x -= 1; break;
-      case 'down': newPosition.y += 1; break;
-      case 'up': newPosition.y -= 1; break;
-    }
-
-    const blocked = this.otherPlayers.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
-
-    if(blocked) {
-      return;
-    }
-    
-    this.me.position = newPosition;
-    this.transitioning = true;
-    this.waitingForServer = true;
-    this.socket.emit(DungeonEvent.Move, direction);
+    const game = this.game as Game;
+    game.transitioning = false;
   }
 
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
-    this.input.set(event.code, true);
+    const game = this.game as Game;
+    game.input.set(event.code, true);
   }
 
   @HostListener('document:keyup', ['$event'])
   onKeyUp(event: KeyboardEvent) {
-    this.input.set(event.code, false);
+    const game = this.game as Game;
+    game.input.set(event.code, false);
 
-    if(event.code === 'KeyP') {
-      console.log('other players', this.otherPlayers);
-      console.log('me', this.me);
+    if (event.code === 'KeyP') {
+      console.log('other players', game.otherPlayers);
+      console.log('me', game.me);
     }
 
-    if(event.code === 'KeyM') {
-      this.autoMoveRight = !this.autoMoveRight;
+    if (event.code === 'KeyM') {
+      game.autoMoveRight = !game.autoMoveRight;
     }
   }
 }

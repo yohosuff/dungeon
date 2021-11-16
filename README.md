@@ -4,6 +4,7 @@ A multiplayer game.
 
 # Ideas
 
+- clients log into server and server remembers client player position
 - a bridge that can only be crossed by two players working together
 - tiles that you can fall into and die (slowly scale down player character until it disappears; or lands on spikes?)
 - tiles that you cannot move through (ie. walls)

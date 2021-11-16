@@ -1,14 +1,79 @@
-<div
-  *ngFor="let player of otherPlayers"
-  class="player"
-  [style.left]="(player.position.x * 32) + 'px'"
-  [style.top]="(player.position.y * 32) + 'px'"
-></div>
+<div *ngIf="authenticatedSocketConnected">
+  <div
+    *ngFor="let player of game.otherPlayers"
+    class="player"
+    [style.left]="(player.position.x * 32) + 'px'"
+    [style.top]="(player.position.y * 32) + 'px'"
+  ></div>
+  
+  <div
+    *ngIf="game.me.id"
+    class="player"
+    [style.left]="(game.me.position.x * 32) + 'px'"
+    [style.top]="(game.me.position.y * 32) + 'px'"
+    (transitionend)="onTransitionEnd()"
+  ></div>
+</div>
 
-<div
-  *ngIf="me.id"
-  class="player"
-  [style.left]="(me.position.x * 32) + 'px'"
-  [style.top]="(me.position.y * 32) + 'px'"
-  (transitionend)="onTransitionEnd()"
-></div>
+<div class="position-absolute bottom-0 mb-1 ms-1">
+  <div *ngIf="!anonymousSocketConnected && !authenticatedSocketConnected">
+    Connecting....
+  </div>
+  <div *ngIf="anonymousSocketConnected">
+    <button type="button" class="btn btn-primary" (click)="showLoginModal()">
+      Login
+    </button>
+    <div class="modal fade" id="loginModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Login</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form [formGroup]="form">
+              <div class="mb-3">
+                <input type="email" placeholder="Email" class="form-control" formControlName="email">
+              </div>
+              <div class="mb-3">
+                <input type="password" placeholder="Password" class="form-control" formControlName="password">
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" (click)="login()" [disabled]="form.invalid">Submit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <button type="button" class="btn btn-primary ms-1" (click)="showRegisterModal()">
+      Register
+    </button>
+    <div class="modal fade" id="registerModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Register</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form [formGroup]="form">
+              <div class="mb-3">
+                <input type="email" placeholder="Email" class="form-control" formControlName="email">
+              </div>
+              <div class="mb-3">
+                <input type="password" placeholder="Password" class="form-control" formControlName="password">
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" (click)="register()" [disabled]="form.invalid">Submit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

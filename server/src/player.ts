@@ -7,10 +7,12 @@ export class Player {
     socket: Socket;
     game: Game;
     position: Position;
+    email: string;
 
     constructor(socket: Socket, game: Game) {
         this.socket = socket;
         this.game = game;
+        this.email = game.emails.get(socket.id);
         this.setPosition();
         this.game.players.push(this);
         this.setupListeners();
@@ -36,12 +38,14 @@ export class Player {
         const socket = this.socket;
         
         socket.on(DungeonEvent.Hello, () => {
+            console.log('DungeonEvent.Hello', this.email);
             const helloDto = new HelloDto();
             helloDto.players = this.game.players.map(player => player.getDto());
             socket.emit(DungeonEvent.Hello, helloDto);
         });
 
         socket.on(DungeonEvent.Move, async direction => {
+            console.log('DungeonEvent.Move', this.email, direction);
 
             const newPosition = {...this.position};
 
@@ -97,7 +101,7 @@ export class Player {
     }
 
     emitPosition() {
-        this.game.io.emit(DungeonEvent.UpdatePosition, this.getDto());
+        this.game.io.of('authenticated').emit(DungeonEvent.UpdatePosition, this.getDto());
     }
 
     getDto() {
