@@ -21,10 +21,11 @@
     Connecting....
   </div>
 
-  <div *ngIf="authenticatedSocketConnected">
+  <div *ngIf="authenticatedSocketConnected" class="d-flex align-items-baseline">
     <button type="button" class="btn btn-primary" (click)="logout()">
       Logout
     </button>
+    <div class="ms-2">{{game.me.email}}</div>
   </div>
 
   <div *ngIf="anonymousSocketConnected">

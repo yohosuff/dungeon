@@ -20,18 +20,26 @@ export class Player {
     }
 
     setPosition() {
+        let position = this.game.positionManager.getPosition(this);
+
+        if(position) {
+            this.position = position;
+            return;
+        }
+
         const positions = this.game.players.reduce((set, player) => {
             set.add(`${player.position.x},${player.position.y}`);
             return set;
         }, new Set<string>());
         
-        const position = new Position(0, 0);
+        position = new Position(0, 0);
 
         while(positions.has(`${position.x},${position.y}`)) {
             position.x += 1;
         }
 
         this.position = position;
+        this.game.positionManager.savePosition(this);
     }
 
     setupListeners() {
@@ -40,7 +48,7 @@ export class Player {
         socket.on(DungeonEvent.Hello, () => {
             console.log('DungeonEvent.Hello', this.email);
             const helloDto = new HelloDto();
-            helloDto.players = this.game.players.map(player => player.getDto());
+            helloDto.players = this.game.players.map(player => player.getHelloDto());
             socket.emit(DungeonEvent.Hello, helloDto);
         });
 
@@ -63,9 +71,10 @@ export class Player {
                 // await new Promise(resolve => setTimeout(resolve, 200)); // simulate lag
             } else {
                 this.position = newPosition;
+                this.game.positionManager.savePosition(this);
             }
 
-            this.emitPosition();            
+            this.emitPosition();
         });
 
         socket.on(DungeonEvent.Disconnect, () => {
@@ -108,6 +117,12 @@ export class Player {
         const dto = new PlayerDto();
         dto.id = this.socket.id;
         dto.position = this.position;
+        return dto;
+    }
+
+    getHelloDto() {
+        const dto = this.getDto();
+        dto.email = this.email;
         return dto;
     }
 }

@@ -1,5 +1,6 @@
 import { Namespace, Server } from 'socket.io';
 import { Player } from './Player';
+import { PositionManager } from './PositionManager';
 import { DungeonEvent, Credential } from '../../shared';
 import { verify, sign } from 'jsonwebtoken';
 import { existsSync, writeFileSync, readFileSync } from 'fs';
@@ -9,6 +10,7 @@ export class Game {
 
     players: Player[];
     emails: Map<string, string>;
+    positionManager: PositionManager;
 
     io: Server;
 
@@ -20,6 +22,7 @@ export class Game {
     constructor() {
         this.players = [];
         this.emails = new Map<string, string>();
+        this.positionManager = new PositionManager();
 
         this.io = new Server({
             serveClient: false,
