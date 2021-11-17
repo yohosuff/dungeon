@@ -1,12 +1,9 @@
-import { Subject } from "rxjs";
-import { io, Socket } from "socket.io-client";
+import { Socket } from "socket.io-client";
 import { DungeonEvent, HelloDto, PlayerDto } from "../../../shared";
-import { Constants } from "./constants";
 
 export class Game {
     
-    token?: string;
-    authenticatedSocket?: Socket;
+    private authenticatedSocket?: Socket;
 
     input: Map<string, boolean>;
 
@@ -16,9 +13,7 @@ export class Game {
     me: PlayerDto;
     otherPlayers: PlayerDto[];
     autoMoveRight: boolean;
-
-    authenticatedSocketConnected$: Subject<boolean>;
-        
+    
     constructor() {
         this.autoMoveRight = false;
         this.me = new PlayerDto();
@@ -26,21 +21,11 @@ export class Game {
         this.waitingForServer = false;
         this.transitioning = false;
         this.input = new Map<string, boolean>();
-        this.authenticatedSocketConnected$ = new Subject<boolean>();
     }
 
-    connect(token: string) {
-        this.token = token;
-
-        const authenticatedSocket = io(`${Constants.BaseUrl}/authenticated`, { auth: { token: this.token } });
-
+    connect(authenticatedSocket: Socket) {
+        
         this.authenticatedSocket = authenticatedSocket;
-
-        authenticatedSocket.on(DungeonEvent.Connect, () => {
-            console.log('authenticated socket connected');
-            this.authenticatedSocketConnected$.next(true);
-            authenticatedSocket.emit(DungeonEvent.Hello);
-        });
 
         authenticatedSocket.on(DungeonEvent.Hello, (helloDto: HelloDto) => {
             console.log('got hello back from server', helloDto);
@@ -65,8 +50,6 @@ export class Game {
 
         authenticatedSocket.on(DungeonEvent.UpdatePosition, (playerDto: PlayerDto) => {
 
-            console.log('DungeonEvent.UpdatePosition', playerDto);
-
             if (playerDto.id === authenticatedSocket.id) {
                 this.waitingForServer = false;
                 return;
@@ -85,6 +68,8 @@ export class Game {
         authenticatedSocket.on(DungeonEvent.PlayerLeft, id => {
             this.removePlayer(this.otherPlayers, id);
         });
+
+        authenticatedSocket.emit(DungeonEvent.Hello);
     }
 
     removePlayer(players: PlayerDto[], id: string) {
@@ -120,8 +105,6 @@ export class Game {
     }
 
     move(direction: string) {
-
-        console.log('move', direction);
 
         if (this.transitioning || this.waitingForServer) {
             return;

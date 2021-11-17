@@ -14,7 +14,8 @@ import { Constants } from './constants';
 export class AppComponent {
 
   form: FormGroup;
-  anonymousSocket: Socket;
+
+  anonymousSocket?: Socket;
   anonymousSocketConnected: boolean;
 
   authenticatedSocket?: Socket;
@@ -24,7 +25,9 @@ export class AppComponent {
 
   constructor(
     private _formBuilder: FormBuilder
-  ) {
+  ) {  
+    this.game = new Game();
+
     this.form = this._formBuilder.group({
       email: ['', Validators.email],
       password: ['', Validators.required],
@@ -33,13 +36,21 @@ export class AppComponent {
     this.anonymousSocketConnected = false;
     this.authenticatedSocketConnected = false;
     
+    const token = localStorage.getItem(Constants.DungeonToken);
+
+    if(token) {
+      this.startGame(token);
+    } else {
+      this.establishAnonymousSocketConnection();
+    }
+  }
+
+  establishAnonymousSocketConnection() {
     this.anonymousSocket = io(`${Constants.BaseUrl}/anonymous`);
 
     this.anonymousSocket.on(DungeonEvent.Connect, () => {
-      console.log('connected!');
+      console.log('anonymous socket connected');
       this.anonymousSocketConnected = true;
-      // check for stored token and attempt to use it to establish authenticated socket connection
-      // if it isn't there, do nothing and wait for user to login
     });
 
     this.anonymousSocket.on(DungeonEvent.LoginFailed, () => {
@@ -52,31 +63,58 @@ export class AppComponent {
 
     this.anonymousSocket.on(DungeonEvent.LoginSuccessful, token => {
       console.log('login success', token);
-      localStorage.setItem('DungeonToken', token);
-      this.createGame(token);
+      localStorage.setItem(Constants.DungeonToken, token);
+      this.startGame(token);
     });
 
     this.anonymousSocket.on(DungeonEvent.Registered, token => {
       console.log('registered', token);
-      localStorage.setItem('DungeonToken', token);
-      this.createGame(token);
+      localStorage.setItem(Constants.DungeonToken, token);
+      this.startGame(token);
     });
 
     this.anonymousSocket.on(DungeonEvent.Disconnect, () => {
       console.log('anonymous socket disconnected');
       this.anonymousSocketConnected = false;
-    });
-
-    this.game = new Game();
+    });    
   }
 
-  createGame(token: string) {
-    this.game.authenticatedSocketConnected$.subscribe(authenticatedSocketConnected => {
-      this.authenticatedSocketConnected = authenticatedSocketConnected;
-      this.anonymousSocket.disconnect();
+  establishAuthenticatedSocketConnection(token: string) {
+    const authenticatedSocket = io(`${Constants.BaseUrl}/authenticated`, { auth: { token } });
+
+    authenticatedSocket.on(DungeonEvent.ConnectError, (error: Error) => {
+      console.warn('could not connect authenticated socket with token', token);
+      console.warn(error);
+      this.establishAnonymousSocketConnection();
+      authenticatedSocket.removeAllListeners();
     });
 
-    this.game.connect(token);
+    this.authenticatedSocket = authenticatedSocket;
+
+    authenticatedSocket.on(DungeonEvent.Connect, () => {
+        console.log('authenticated socket connected');
+        this.anonymousSocket?.disconnect();
+        this.authenticatedSocketConnected = true;
+    });
+
+    authenticatedSocket.on(DungeonEvent.Disconnect, () => {
+        console.log('authenticated socket disconnected');
+        this.authenticatedSocketConnected = false;
+        this.establishAnonymousSocketConnection();
+    });
+
+    return authenticatedSocket;
+  }
+
+  logout() {
+    localStorage.removeItem(Constants.DungeonToken);
+    this.authenticatedSocket?.disconnect();
+  }
+
+  startGame(token: string) {
+    console.log('startGame', token);
+    const authenticatedSocket = this.establishAuthenticatedSocketConnection(token);
+    this.game.connect(authenticatedSocket);
   }
 
   getModalInstance(id: string) {
@@ -95,7 +133,7 @@ export class AppComponent {
   register() {
     const email = this.form.get('email')?.value;
     const password = this.form.get('password')?.value;
-    this.anonymousSocket.emit(DungeonEvent.Register, { email, password });
+    this.anonymousSocket?.emit(DungeonEvent.Register, { email, password });
     this.getModalInstance('registerModal').hide();
   }
 
@@ -109,7 +147,7 @@ export class AppComponent {
   login() {
     const email = this.form.get('email')?.value;
     const password = this.form.get('password')?.value;
-    this.anonymousSocket.emit(DungeonEvent.Login, { email, password });
+    this.anonymousSocket?.emit(DungeonEvent.Login, { email, password });
     this.getModalInstance('loginModal').hide();
   }
 

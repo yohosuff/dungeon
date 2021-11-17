@@ -16,9 +16,17 @@
 </div>
 
 <div class="position-absolute bottom-0 mb-1 ms-1">
+  
   <div *ngIf="!anonymousSocketConnected && !authenticatedSocketConnected">
     Connecting....
   </div>
+
+  <div *ngIf="authenticatedSocketConnected">
+    <button type="button" class="btn btn-primary" (click)="logout()">
+      Logout
+    </button>
+  </div>
+
   <div *ngIf="anonymousSocketConnected">
     <button type="button" class="btn btn-primary" (click)="showLoginModal()">
       Login

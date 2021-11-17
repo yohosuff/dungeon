@@ -3,6 +3,7 @@ export class DungeonEvent {
     public static readonly Connection = "connection";
     public static readonly Disconnect = "disconnect";
     public static readonly Connect = "connect";
+    public static readonly ConnectError = "connect_error";
 
     // auth events
     public static readonly Register = "Register";
