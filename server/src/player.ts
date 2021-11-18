@@ -14,9 +14,9 @@ export class Player {
         this.game = game;
         this.email = game.emails.get(socket.id);
         this.setPosition();
-        this.game.players.push(this);
         this.setupListeners();
-        this.emitPosition();
+        this.game.players.push(this);
+        socket.broadcast.emit(DungeonEvent.PlayerJoined, this.getHelloDto());
     }
 
     setPosition() {
@@ -94,19 +94,6 @@ export class Player {
         this.game.players.splice(index, 1);
 
         console.log('removed player', player.socket.id);
-    }
-
-    removePlayerWithSocket(socket: Socket) {
-        console.log('removing player');
-        for(let i = this.game.players.length - 1; i >= 0; --i) {
-            const player = this.game.players[i];
-            if(player.socket === socket) {
-                this.game.players.splice(i, 1);
-                console.log('removed player');
-                return;
-            }
-        }
-        console.log('did not remove player');
     }
 
     emitPosition() {

@@ -1,18 +1,22 @@
 <div *ngIf="authenticatedSocketConnected">
   <div
     *ngFor="let player of game.otherPlayers"
-    class="player"
+    class="player d-flex flex-column align-items-center"
     [style.left]="(player.position.x * 32) + 'px'"
     [style.top]="(player.position.y * 32) + 'px'"
-  ></div>
+  >
+    <div class="text-center position-absolute bottom-100 text-secondary">{{player.email}}</div>
+  </div>
   
   <div
     *ngIf="game.me.id"
-    class="player"
+    class="player d-flex flex-column align-items-center"
     [style.left]="(game.me.position.x * 32) + 'px'"
     [style.top]="(game.me.position.y * 32) + 'px'"
     (transitionend)="onTransitionEnd()"
-  ></div>
+  >
+    <div class="text-center position-absolute bottom-100 text-info">{{game.me.email}}</div>
+  </div>
 </div>
 
 <div class="position-absolute bottom-0 mb-1 ms-1">
@@ -25,7 +29,7 @@
     <button type="button" class="btn btn-primary" (click)="logout()">
       Logout
     </button>
-    <div class="ms-2">{{game.me.email}}</div>
+    <div class="ms-2 text-info">{{game.me.email}}</div>
   </div>
 
   <div *ngIf="anonymousSocketConnected">

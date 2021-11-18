@@ -48,6 +48,10 @@ export class Game {
             window.requestAnimationFrame(this.loop.bind(this));
         });
 
+        authenticatedSocket.on(DungeonEvent.PlayerJoined, (playerDto: PlayerDto) => {
+            this.otherPlayers.push(playerDto);
+        });
+
         authenticatedSocket.on(DungeonEvent.UpdatePosition, (playerDto: PlayerDto) => {
 
             if (playerDto.id === authenticatedSocket.id) {
@@ -58,8 +62,8 @@ export class Game {
             let player = this.otherPlayers.find(player => player.id === playerDto.id);
 
             if (!player) {
-                player = playerDto;
-                this.otherPlayers.push(player);
+                console.warn('received playerDto for player not in otherPlayers list');
+                return;
             }
 
             player.position = playerDto.position;
