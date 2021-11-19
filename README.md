@@ -4,7 +4,7 @@ A multiplayer game.
 
 # Ideas
 
-- clients log into server and server remembers client player position
+- player 'characters' remain in the game world when player logs out... and can starve to death if they don't eat
 - a bridge that can only be crossed by two players working together
 - tiles that you can fall into and die (slowly scale down player character until it disappears; or lands on spikes?)
 - tiles that you cannot move through (ie. walls)

@@ -26,16 +26,12 @@
   </div>
 
   <div *ngIf="authenticatedSocketConnected" class="d-flex align-items-baseline">
-    <button type="button" class="btn btn-primary" (click)="logout()">
-      Logout
-    </button>
+    <button type="button" class="btn btn-primary" (click)="logout()"> Logout </button>
     <div class="ms-2 text-info">{{game.me.email}}</div>
   </div>
 
   <div *ngIf="anonymousSocketConnected">
-    <button type="button" class="btn btn-primary" (click)="showLoginModal()">
-      Login
-    </button>
+    <button type="button" class="btn btn-primary" (click)="showLoginModal()"> Login </button>
     <div class="modal fade" id="loginModal">
       <div class="modal-dialog">
         <div class="modal-content">

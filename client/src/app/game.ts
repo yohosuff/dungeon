@@ -49,17 +49,22 @@ export class Game {
         });
 
         authenticatedSocket.on(DungeonEvent.PlayerJoined, (playerDto: PlayerDto) => {
-            this.otherPlayers.push(playerDto);
+            const existingPlayer = this.otherPlayers.find(player => player.email === playerDto.email);
+            
+            if(!existingPlayer) {
+                this.otherPlayers.push(playerDto);
+            }
+            
         });
 
         authenticatedSocket.on(DungeonEvent.UpdatePosition, (playerDto: PlayerDto) => {
 
-            if (playerDto.id === authenticatedSocket.id) {
+            if (playerDto.email === this.me.email) {
                 this.waitingForServer = false;
                 return;
             }
 
-            let player = this.otherPlayers.find(player => player.id === playerDto.id);
+            let player = this.otherPlayers.find(player => player.email === playerDto.email);
 
             if (!player) {
                 console.warn('received playerDto for player not in otherPlayers list');

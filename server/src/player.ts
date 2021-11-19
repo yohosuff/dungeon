@@ -13,26 +13,33 @@ export class Player {
         this.socket = socket;
         this.game = game;
         this.email = game.emails.get(socket.id);
-        this.setPosition();
+
+        const players = this.game.players;
+        const existingPlayer = players.find(player => player.email === this.email);
+
+        if(existingPlayer) {
+            this.position = existingPlayer.position;
+            players.splice(players.indexOf(existingPlayer), 1);
+        } else {
+            this.position = this.getPosition();
+        }
+
+        players.push(this);
         this.setupListeners();
-        this.game.players.push(this);
         socket.broadcast.emit(DungeonEvent.PlayerJoined, this.getHelloDto());
     }
 
-    setPosition() {
-        let position = this.game.positionManager.getPosition(this);
-
-        if(position) {
-            this.position = position;
-            return;
-        }
+    getPosition() {
+        // this should be used during server start up to create the player list from positions.json
+        // players that are killed are removed from positions.json
+        // let position = this.game.positionManager.getPosition(this);
 
         const positions = this.game.players.reduce((set, player) => {
             set.add(`${player.position.x},${player.position.y}`);
             return set;
         }, new Set<string>());
         
-        position = new Position(0, 0);
+        const position = new Position(0, 0);
 
         while(positions.has(`${position.x},${position.y}`)) {
             position.x += 1;
@@ -40,6 +47,8 @@ export class Player {
 
         this.position = position;
         this.game.positionManager.savePosition(this);
+
+        return position;
     }
 
     setupListeners() {
@@ -78,8 +87,8 @@ export class Player {
         });
 
         socket.on(DungeonEvent.Disconnect, () => {
-            this.removePlayer(this);
-            socket.broadcast.emit(DungeonEvent.PlayerLeft, socket.id);
+            // this.removePlayer(this);
+            // socket.broadcast.emit(DungeonEvent.PlayerLeft, socket.id);
         });
     }
 
@@ -97,7 +106,7 @@ export class Player {
     }
 
     emitPosition() {
-        this.game.io.of('authenticated').emit(DungeonEvent.UpdatePosition, this.getDto());
+        this.game.io.of('authenticated').emit(DungeonEvent.UpdatePosition, this.getHelloDto());
     }
 
     getDto() {
