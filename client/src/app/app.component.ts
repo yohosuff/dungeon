@@ -49,7 +49,6 @@ export class AppComponent {
     this.anonymousSocket = io(`${Constants.BaseUrl}/anonymous`);
 
     this.anonymousSocket.on(DungeonEvent.Connect, () => {
-      console.log('anonymous socket connected');
       this.anonymousSocketConnected = true;
     });
 
@@ -62,19 +61,16 @@ export class AppComponent {
     });
 
     this.anonymousSocket.on(DungeonEvent.LoginSuccessful, token => {
-      console.log('login success', token);
       localStorage.setItem(Constants.DungeonToken, token);
       this.startGame(token);
     });
 
     this.anonymousSocket.on(DungeonEvent.Registered, token => {
-      console.log('registered', token);
       localStorage.setItem(Constants.DungeonToken, token);
       this.startGame(token);
     });
 
     this.anonymousSocket.on(DungeonEvent.Disconnect, () => {
-      console.log('anonymous socket disconnected');
       this.anonymousSocketConnected = false;
     });    
   }
@@ -92,13 +88,11 @@ export class AppComponent {
     this.authenticatedSocket = authenticatedSocket;
 
     authenticatedSocket.on(DungeonEvent.Connect, () => {
-        console.log('authenticated socket connected');
         this.anonymousSocket?.disconnect();
         this.authenticatedSocketConnected = true;
     });
 
     authenticatedSocket.on(DungeonEvent.Disconnect, () => {
-        console.log('authenticated socket disconnected');
         this.authenticatedSocketConnected = false;
         this.establishAnonymousSocketConnection();
     });
@@ -112,7 +106,6 @@ export class AppComponent {
   }
 
   startGame(token: string) {
-    console.log('startGame', token);
     const authenticatedSocket = this.establishAuthenticatedSocketConnection(token);
     this.game.connect(authenticatedSocket);
   }

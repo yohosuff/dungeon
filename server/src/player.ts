@@ -4,36 +4,26 @@ import { DungeonEvent, HelloDto, PlayerDto, Position } from "../../shared";
 
 export class Player {
 
-    socket: Socket;
-    game: Game;
-    position: Position;
     email: string;
+    game: Game;
 
-    constructor(socket: Socket, game: Game) {
-        this.socket = socket;
+    socket?: Socket;
+    position: Position;
+
+    constructor(email: string, game: Game) {
         this.game = game;
-        this.email = game.emails.get(socket.id);
+        this.email = email;
+        
+        // this.initializePosition();
+    }
 
-        const players = this.game.players;
-        const existingPlayer = players.find(player => player.email === this.email);
-
-        if(existingPlayer) {
-            this.position = existingPlayer.position;
-            players.splice(players.indexOf(existingPlayer), 1);
-        } else {
-            this.position = this.getPosition();
-        }
-
-        players.push(this);
+    attachSocket(socket: Socket) {
+        this.socket = socket;
         this.setupListeners();
         socket.broadcast.emit(DungeonEvent.PlayerJoined, this.getHelloDto());
     }
 
-    getPosition() {
-        // this should be used during server start up to create the player list from positions.json
-        // players that are killed are removed from positions.json
-        // let position = this.game.positionManager.getPosition(this);
-
+    initializePosition() {
         const positions = this.game.players.reduce((set, player) => {
             set.add(`${player.position.x},${player.position.y}`);
             return set;
@@ -47,23 +37,18 @@ export class Player {
 
         this.position = position;
         this.game.positionManager.savePosition(this);
-
-        return position;
     }
 
     setupListeners() {
         const socket = this.socket;
         
         socket.on(DungeonEvent.Hello, () => {
-            console.log('DungeonEvent.Hello', this.email);
             const helloDto = new HelloDto();
             helloDto.players = this.game.players.map(player => player.getHelloDto());
             socket.emit(DungeonEvent.Hello, helloDto);
         });
 
         socket.on(DungeonEvent.Move, async direction => {
-            console.log('DungeonEvent.Move', this.email, direction);
-
             const newPosition = {...this.position};
 
             switch(direction) {
@@ -76,7 +61,6 @@ export class Player {
             const blocked = this.game.players.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
 
             if(blocked) {
-                console.log('blocked!');
                 // await new Promise(resolve => setTimeout(resolve, 200)); // simulate lag
             } else {
                 this.position = newPosition;
@@ -87,7 +71,7 @@ export class Player {
         });
 
         socket.on(DungeonEvent.Disconnect, () => {
-            // this.removePlayer(this);
+            // should we still let clients know a player has disconnected?
             // socket.broadcast.emit(DungeonEvent.PlayerLeft, socket.id);
         });
     }
@@ -96,13 +80,11 @@ export class Player {
         const index = this.game.players.indexOf(player);
         
         if(index === -1) {
-            console.log('did not find player to remove');
+            console.warn('did not find player to remove', player);
             return;
         }
 
         this.game.players.splice(index, 1);
-
-        console.log('removed player', player.socket.id);
     }
 
     emitPosition() {

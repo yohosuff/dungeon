@@ -28,8 +28,6 @@ export class Game {
         this.authenticatedSocket = authenticatedSocket;
 
         authenticatedSocket.on(DungeonEvent.Hello, (helloDto: HelloDto) => {
-            console.log('got hello back from server', helloDto);
-
             this.otherPlayers = [];
 
             for (let player of helloDto.players) {

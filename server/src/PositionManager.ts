@@ -2,6 +2,7 @@ import { Position } from "../../shared";
 import { Player } from "./Player";
 import { existsSync, writeFileSync, readFileSync } from 'fs';
 
+// this should really be called the PlayerManager and should save more stuff than just positions (eg. health, inventory, etc...)
 export class PositionManager {
     
     positions: Map<string,Position>;
@@ -30,13 +31,11 @@ export class PositionManager {
     }
     
     savePosition(player: Player) {
-        console.log('savePosition', player.email, player.position);
         this.positions.set(player.email, player.position);
         this.writePositions(this.positions);
     }
 
-    getPosition(player: Player) {
-        console.log('getPosition', this.positions);
-        return this.positions.get(player.email);
+    getPosition(email: string) {
+        return this.positions.get(email);
     }
 }

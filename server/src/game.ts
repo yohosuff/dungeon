@@ -20,9 +20,10 @@ export class Game {
     TOKEN_SECRET = '123qwe';
 
     constructor() {
-        this.players = [];
         this.emails = new Map<string, string>();
         this.positionManager = new PositionManager();
+                
+        this.loadPlayers();
 
         this.io = new Server({
             serveClient: false,
@@ -35,6 +36,16 @@ export class Game {
         this.authenticatedNamespace = this.io.of('authenticated');
     }
 
+    private loadPlayers() {
+        this.players = [];
+        
+        for(let email of this.positionManager.positions.keys()) {
+            const player = new Player(email, this);
+            player.position = this.positionManager.getPosition(email);
+            this.players.push(player);
+        }
+    }
+
     start() {
         this.setupAnonymousListeners();
         this.setupAuthenticatedListeners();
@@ -44,10 +55,8 @@ export class Game {
 
     setupAnonymousListeners() {
         this.anonymousNamespace.on(DungeonEvent.Connection, socket => {
-            console.log('connection on anonymous namespace', socket.id);
-
+            
             socket.on(DungeonEvent.Register, (credential: Credential) => {
-                // read credentials from disk
                 const path = 'credentials.json';
                 
                 if(!existsSync(path)) {
@@ -56,8 +65,6 @@ export class Game {
     
                 const credentialsString = readFileSync(path, 'utf8');
                 const credentials = JSON.parse(credentialsString) as Credential[];
-    
-                // check if email already exists
                 credential.email = credential.email.toLowerCase();
                 const exists = credentials.some(c => c.email === credential.email);
     
@@ -66,21 +73,15 @@ export class Game {
                     return;
                 }
 
-                // save credentials to disk (encrypted password)
                 credential.password = hashSync(credential.password);
                 credentials.push(credential);
-
                 writeFileSync(path, JSON.stringify(credentials));
-
                 const payload = { email: credential.email };
                 const token = sign(payload, this.TOKEN_SECRET);
-
                 socket.emit(DungeonEvent.Registered, token);
             });
 
             socket.on(DungeonEvent.Login, (credential: Credential) => {
-                console.log(credential);
-                // get credentials from disk
                 const path = 'credentials.json';
                 
                 if(!existsSync(path)) {
@@ -89,7 +90,6 @@ export class Game {
     
                 const credentialsString = readFileSync(path, 'utf8');
                 const credentials = JSON.parse(credentialsString) as Credential[];
-    
                 credential.email = credential.email.toLowerCase();
                 const existingCredential = credentials.find(c => c.email === credential.email);
 
@@ -98,15 +98,13 @@ export class Game {
                     return;
                 }
 
-                // check encrypted password
-                const ok = compareSync(credential.password, existingCredential.password);
+                const passwordIsCorrect = compareSync(credential.password, existingCredential.password);
 
-                if(!ok) {
+                if(!passwordIsCorrect) {
                     socket.emit(DungeonEvent.LoginFailed);
                     return;
                 }
 
-                // return token if successful
                 const payload = { email: credential.email };
                 const token = sign(payload, this.TOKEN_SECRET);
 
@@ -127,16 +125,21 @@ export class Game {
                 return;
             }
 
-            console.log('token verification passed', payload);
-
-            this.emails.set(socket.id, payload.email); // need this to retrieve players position saved to disk
-            
+            this.emails.set(socket.id, payload.email);
             next();
         });
 
         this.authenticatedNamespace.on(DungeonEvent.Connection, socket => {
-            console.log('connection on authenticated namespace', this.emails.get(socket.id));
-            new Player(socket, this);
+            const email = this.emails.get(socket.id);
+            let player = this.players.find(player => player.email === email);
+
+            if(!player) {
+                player = new Player(email, this);
+                player.initializePosition();
+                this.players.push(player);
+            }
+
+            player.attachSocket(socket);
         });
     }
 
