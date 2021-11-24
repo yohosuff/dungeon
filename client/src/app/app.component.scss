@@ -1,8 +1,100 @@
+$size: 64px;
+$up: 8;
+$left: 9;
+$down: 10;
+$right: 11;
+
 .player {
     border: 1px solid white;
     box-sizing: border-box;
-    width: 32px;
-    height: 32px;
+    width: $size;
+    height: $size;
     position: absolute;
     transition: left 200ms linear, top 200ms linear;
 }
+
+.character {
+    width: $size;
+    height: $size;
+    overflow: hidden;
+    position: relative;
+}
+
+.character img {
+    position: absolute;
+    width: calc($size * 13);
+    image-rendering: pixelated;
+}
+
+// left
+
+.face-left {
+    left: 0;
+    top: calc($size * $left * -1);
+}
+
+.walk-left {
+    animation: walkLeftAnimation 500ms steps(8) infinite;
+    left: calc($size * -1);
+    top: calc($size * $left * -1);
+}
+
+@keyframes walkLeftAnimation {
+    from { transform: translate3d(0, 0, 0) }
+    to { transform: translate3d(calc($size * -8), 0, 0) }
+}
+
+// right
+
+.face-right {
+    left: 0;
+    top: calc($size * $right * -1);
+}
+
+.walk-right {
+    animation: walkRightAnimation 500ms steps(8) infinite;
+    left: calc($size * -1);
+    top: calc($size * $right * -1);
+}
+
+@keyframes walkRightAnimation {
+    from { transform: translate3d(0, 0, 0) }
+    to { transform: translate3d(calc($size * 8 * -1), 0, 0) }
+}
+
+// up
+
+.face-up {
+    left: 0;
+    top: calc($size * $up * -1);
+}
+
+.walk-up {
+    animation: walkUpAnimation 500ms steps(8) infinite;
+    left: calc($size * -1);
+    top: calc($size * $up * -1);
+}
+
+@keyframes walkUpAnimation {
+    from { transform: translate3d(0, 0, 0) }
+    to { transform: translate3d(calc($size * 8 * -1), 0, 0) }
+}
+
+// down
+
+.face-down {
+    left: 0;
+    top: calc($size * $down * -1);
+}
+
+.walk-down {
+    animation: walkDownAnimation 500ms steps(8) infinite;
+    left: calc($size * -1);
+    top: calc($size * $down * -1);
+}
+
+@keyframes walkDownAnimation {
+    from { transform: translate3d(0, 0, 0) }
+    to { transform: translate3d(calc($size * 8 * -1), 0, 0) }
+}
+

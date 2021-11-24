@@ -44,6 +44,8 @@ export class Game {
             }
 
             window.requestAnimationFrame(this.loop.bind(this));
+
+            this.afterHello();
         });
 
         authenticatedSocket.on(DungeonEvent.PlayerJoined, (playerDto: PlayerDto) => {
@@ -77,6 +79,10 @@ export class Game {
         });
 
         authenticatedSocket.emit(DungeonEvent.Hello);
+    }
+
+    afterHello() {
+        this.me.action = 'face-right';
     }
 
     removePlayer(players: PlayerDto[], id: string) {
@@ -129,8 +135,11 @@ export class Game {
         const blocked = this.otherPlayers.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
 
         if (blocked) {
+            this.me.action = `face-${direction}`;
             return;
         }
+
+        this.me.action = `walk-${direction}`;
 
         this.me.position = newPosition;
         this.transitioning = true;

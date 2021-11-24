@@ -147,6 +147,16 @@ export class AppComponent {
   onTransitionEnd() {
     const game = this.game as Game;
     game.transitioning = false;
+    
+    if(game.me.action === 'walk-left') {
+      game.me.action = 'face-left';
+    } else if(game.me.action === 'walk-right') {
+      game.me.action = 'face-right';
+    } else if (game.me.action === 'walk-up') {
+      game.me.action = 'face-up';
+    } else if (game.me.action === 'walk-down') {
+      game.me.action = 'face-down';
+    }
   }
 
   @HostListener('document:keydown', ['$event'])

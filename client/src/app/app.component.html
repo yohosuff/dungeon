@@ -10,12 +10,24 @@
   
   <div
     *ngIf="game.me.id"
-    class="player d-flex flex-column align-items-center"
+    class="character player"
     [style.left]="(game.me.position.x * 32) + 'px'"
     [style.top]="(game.me.position.y * 32) + 'px'"
     (transitionend)="onTransitionEnd()"
   >
-    <div class="text-center position-absolute bottom-100 text-info">{{game.me.email}}</div>
+    <img
+      [ngClass]="{
+        'face-left': game.me.action === 'face-left',
+        'face-right': game.me.action === 'face-right',
+        'face-up': game.me.action === 'face-up',
+        'face-down': game.me.action === 'face-down',
+        'walk-left': game.me.action === 'walk-left',
+        'walk-right': game.me.action === 'walk-right',
+        'walk-up': game.me.action === 'walk-up',
+        'walk-down': game.me.action === 'walk-down'
+      }"
+      src="assets/character.png"
+    >
   </div>
 </div>
 
