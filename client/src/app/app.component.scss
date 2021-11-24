@@ -5,22 +5,14 @@ $down: 10;
 $right: 11;
 
 .player {
-    border: 1px solid white;
-    box-sizing: border-box;
-    width: $size;
-    height: $size;
-    position: absolute;
     transition: left 200ms linear, top 200ms linear;
-}
-
-.character {
     width: $size;
     height: $size;
     overflow: hidden;
-    position: relative;
+    position: absolute;
 }
 
-.character img {
+.player img {
     position: absolute;
     width: calc($size * 13);
     image-rendering: pixelated;

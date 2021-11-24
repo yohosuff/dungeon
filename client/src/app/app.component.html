@@ -1,16 +1,30 @@
 <div *ngIf="authenticatedSocketConnected">
+  
   <div
     *ngFor="let player of game.otherPlayers"
-    class="player d-flex flex-column align-items-center"
+    class="player"
     [style.left]="(player.position.x * 32) + 'px'"
     [style.top]="(player.position.y * 32) + 'px'"
+    (transitionend)="onOtherPlayerTransitionEnd(player)"
   >
-    <div class="text-center position-absolute bottom-100 text-secondary">{{player.email}}</div>
+    <img
+      [ngClass]="{
+        'face-left': player.action === 'face-left',
+        'face-right': player.action === 'face-right',
+        'face-up': player.action === 'face-up',
+        'face-down': player.action === 'face-down',
+        'walk-left': player.action === 'walk-left',
+        'walk-right': player.action === 'walk-right',
+        'walk-up': player.action === 'walk-up',
+        'walk-down': player.action === 'walk-down'
+      }"
+      src="assets/character.png"
+    >
   </div>
   
   <div
-    *ngIf="game.me.id"
-    class="character player"
+    *ngIf="game.me.email"
+    class="player"
     [style.left]="(game.me.position.x * 32) + 'px'"
     [style.top]="(game.me.position.y * 32) + 'px'"
     (transitionend)="onTransitionEnd()"

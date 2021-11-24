@@ -31,12 +31,12 @@ export class Game {
             this.otherPlayers = [];
 
             for (let player of helloDto.players) {
-                if (player.id === authenticatedSocket.id) {
+                if (player.email === helloDto.email) {
                     this.me = player;
                     continue;
                 }
 
-                if (this.otherPlayers.some(p => p.id === player.id)) {
+                if (this.otherPlayers.some(otherPlayer => otherPlayer.email === player.email)) {
                     continue;
                 }
 
@@ -54,10 +54,11 @@ export class Game {
             if(!existingPlayer) {
                 this.otherPlayers.push(playerDto);
             }
-            
         });
 
         authenticatedSocket.on(DungeonEvent.UpdatePosition, (playerDto: PlayerDto) => {
+
+            console.log('authenticatedSocket DungeonEvent.UpdatePosition');
 
             if (playerDto.email === this.me.email) {
                 this.waitingForServer = false;
@@ -71,11 +72,21 @@ export class Game {
                 return;
             }
 
+            if(player.position.x - playerDto.position.x < 0) {
+                player.action = 'walk-right';
+            } else if(player.position.x - playerDto.position.x > 0) {
+                player.action = 'walk-left';
+            } else if (player.position.y - playerDto.position.y < 0) {
+                player.action = 'walk-down';
+            } else if (player.position.y - playerDto.position.y > 0) {
+                player.action = 'walk-up';
+            }
+
             player.position = playerDto.position;
         });
 
-        authenticatedSocket.on(DungeonEvent.PlayerLeft, id => {
-            this.removePlayer(this.otherPlayers, id);
+        authenticatedSocket.on(DungeonEvent.PlayerLeft, (email: string) => {
+            console.log('player left', email);
         });
 
         authenticatedSocket.emit(DungeonEvent.Hello);
@@ -85,17 +96,7 @@ export class Game {
         this.me.action = 'face-right';
     }
 
-    removePlayer(players: PlayerDto[], id: string) {
-        for (let i = players.length - 1; i >= 0; --i) {
-            const player = players[i];
-            if (player.id === id) {
-                players.splice(i, 1);
-                break;
-            }
-        }
-    }
-
-    loop(timeStamp: DOMHighResTimeStamp) {
+    loop() {
         this.handleInput();
         window.requestAnimationFrame(this.loop.bind(this));
     }

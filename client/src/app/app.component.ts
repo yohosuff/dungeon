@@ -1,7 +1,7 @@
 import { Component, HostListener } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { io, Socket } from 'socket.io-client';
-import { DungeonEvent } from '../../../shared';
+import { DungeonEvent, PlayerDto } from '../../../shared';
 import { Game } from './game';
 import { Modal } from 'bootstrap';
 import { Constants } from './constants';
@@ -106,6 +106,7 @@ export class AppComponent {
   }
 
   startGame(token: string) {
+    console.log('startGame');
     const authenticatedSocket = this.establishAuthenticatedSocketConnection(token);
     this.game.connect(authenticatedSocket);
   }
@@ -156,6 +157,18 @@ export class AppComponent {
       game.me.action = 'face-up';
     } else if (game.me.action === 'walk-down') {
       game.me.action = 'face-down';
+    }
+  }
+
+  onOtherPlayerTransitionEnd(player: PlayerDto) {
+    if(player.action === 'walk-left') {
+      player.action = 'face-left';
+    } else if(player.action === 'walk-right') {
+      player.action = 'face-right';
+    } else if (player.action === 'walk-up') {
+      player.action = 'face-up';
+    } else if (player.action === 'walk-down') {
+      player.action = 'face-down';
     }
   }
 

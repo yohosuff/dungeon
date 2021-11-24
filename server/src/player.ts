@@ -6,15 +6,12 @@ export class Player {
 
     email: string;
     game: Game;
-
     socket?: Socket;
     position: Position;
 
     constructor(email: string, game: Game) {
         this.game = game;
         this.email = email;
-        
-        // this.initializePosition();
     }
 
     attachSocket(socket: Socket) {
@@ -45,6 +42,7 @@ export class Player {
         socket.on(DungeonEvent.Hello, () => {
             const helloDto = new HelloDto();
             helloDto.players = this.game.players.map(player => player.getHelloDto());
+            helloDto.email = this.email;
             socket.emit(DungeonEvent.Hello, helloDto);
         });
 
@@ -71,8 +69,7 @@ export class Player {
         });
 
         socket.on(DungeonEvent.Disconnect, () => {
-            // should we still let clients know a player has disconnected?
-            // socket.broadcast.emit(DungeonEvent.PlayerLeft, socket.id);
+            socket.broadcast.emit(DungeonEvent.PlayerLeft, this.email);
         });
     }
 
@@ -93,7 +90,6 @@ export class Player {
 
     getDto() {
         const dto = new PlayerDto();
-        dto.id = this.socket.id;
         dto.position = this.position;
         return dto;
     }

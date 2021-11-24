@@ -43,6 +43,7 @@ export class Game {
             const player = new Player(email, this);
             player.position = this.positionManager.getPosition(email);
             this.players.push(player);
+            console.log('loaded player', player.email, player.position);
         }
     }
 
