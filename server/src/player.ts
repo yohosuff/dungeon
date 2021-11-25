@@ -8,6 +8,7 @@ export class Player {
     game: Game;
     socket?: Socket;
     position: Position;
+    direction: string;
 
     constructor(email: string, game: Game) {
         this.game = game;
@@ -17,7 +18,7 @@ export class Player {
     attachSocket(socket: Socket) {
         this.socket = socket;
         this.setupListeners();
-        socket.broadcast.emit(DungeonEvent.PlayerJoined, this.getHelloDto());
+        socket.broadcast.emit(DungeonEvent.PlayerJoined, this.getDto());
     }
 
     initializePosition() {
@@ -41,13 +42,16 @@ export class Player {
         
         socket.on(DungeonEvent.Hello, () => {
             const helloDto = new HelloDto();
-            helloDto.players = this.game.players.map(player => player.getHelloDto());
+            helloDto.players = this.game.players.map(player => player.getDto());
             helloDto.email = this.email;
             socket.emit(DungeonEvent.Hello, helloDto);
         });
 
         socket.on(DungeonEvent.Move, async direction => {
-            const newPosition = {...this.position};
+            
+            this.direction = direction;
+            
+            const newPosition = this.position.clone();
 
             switch(direction) {
                 case 'right': newPosition.x += 1; break;
@@ -61,11 +65,11 @@ export class Player {
             if(blocked) {
                 // await new Promise(resolve => setTimeout(resolve, 200)); // simulate lag
             } else {
-                this.position = newPosition;
+                this.position = Position.reconstruct(newPosition);
                 this.game.positionManager.savePosition(this);
             }
 
-            this.emitPosition();
+            this.emitUpdate();
         });
 
         socket.on(DungeonEvent.Disconnect, () => {
@@ -84,19 +88,15 @@ export class Player {
         this.game.players.splice(index, 1);
     }
 
-    emitPosition() {
-        this.game.io.of('authenticated').emit(DungeonEvent.UpdatePosition, this.getHelloDto());
+    emitUpdate() {
+        this.game.io.of('authenticated').emit(DungeonEvent.UpdatePlayer, this.getDto());
     }
 
     getDto() {
         const dto = new PlayerDto();
         dto.position = this.position;
-        return dto;
-    }
-
-    getHelloDto() {
-        const dto = this.getDto();
         dto.email = this.email;
+        dto.direction = this.direction;
         return dto;
     }
 }

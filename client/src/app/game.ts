@@ -1,5 +1,5 @@
 import { Socket } from "socket.io-client";
-import { DungeonEvent, HelloDto, PlayerDto } from "../../../shared";
+import { DungeonEvent, HelloDto, PlayerDto, Position } from "../../../shared";
 
 export class Game {
     
@@ -31,6 +31,8 @@ export class Game {
             this.otherPlayers = [];
 
             for (let player of helloDto.players) {
+                player = PlayerDto.reconstruct(player);
+
                 if (player.email === helloDto.email) {
                     this.me = player;
                     continue;
@@ -49,6 +51,8 @@ export class Game {
         });
 
         authenticatedSocket.on(DungeonEvent.PlayerJoined, (playerDto: PlayerDto) => {
+            playerDto = PlayerDto.reconstruct(playerDto);
+
             const existingPlayer = this.otherPlayers.find(player => player.email === playerDto.email);
             
             if(!existingPlayer) {
@@ -56,7 +60,9 @@ export class Game {
             }
         });
 
-        authenticatedSocket.on(DungeonEvent.UpdatePosition, (playerDto: PlayerDto) => {
+        authenticatedSocket.on(DungeonEvent.UpdatePlayer, (playerDto: PlayerDto) => {
+
+            playerDto = PlayerDto.reconstruct(playerDto);
 
             console.log('authenticatedSocket DungeonEvent.UpdatePosition');
 
@@ -72,17 +78,11 @@ export class Game {
                 return;
             }
 
-            if(player.position.x - playerDto.position.x < 0) {
-                player.action = 'walk-right';
-            } else if(player.position.x - playerDto.position.x > 0) {
-                player.action = 'walk-left';
-            } else if (player.position.y - playerDto.position.y < 0) {
-                player.action = 'walk-down';
-            } else if (player.position.y - playerDto.position.y > 0) {
-                player.action = 'walk-up';
-            }
-
+            const moving = !player.position.equals(playerDto.position);
+            
             player.position = playerDto.position;
+            player.direction = playerDto.direction;
+            player.action = `${moving ? 'walk' : 'face'}-${playerDto.direction}`;
         });
 
         authenticatedSocket.on(DungeonEvent.PlayerLeft, (email: string) => {
@@ -124,7 +124,7 @@ export class Game {
             return;
         }
 
-        const newPosition = { ...this.me.position };
+        const newPosition = this.me.position.clone();
 
         switch (direction) {
             case 'right': newPosition.x += 1; break;
@@ -137,12 +137,19 @@ export class Game {
 
         if (blocked) {
             this.me.action = `face-${direction}`;
+            
+            if(this.me.direction !== direction) {
+                this.me.direction = direction;
+                this.authenticatedSocket?.emit(DungeonEvent.Move, direction);
+            }
+
             return;
         }
 
         this.me.action = `walk-${direction}`;
 
         this.me.position = newPosition;
+        this.me.direction = direction;
         this.transitioning = true;
         this.waitingForServer = true;
         

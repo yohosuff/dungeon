@@ -21,7 +21,15 @@ export class PositionManager {
         const positionsJson = readFileSync(PositionManager.Path, 'utf8');
         const positionsObject = JSON.parse(positionsJson);
         const positionsEntries = Object.entries(positionsObject);
-        this.positions = new Map(positionsEntries) as Map<string, Position>;
+        const positions = new Map(positionsEntries) as Map<string, Position>;
+
+        for(let email of positions.keys()) {
+            const data = positions.get(email);
+            const position = Position.reconstruct(data);
+            positions.set(email, position);
+        }
+
+        this.positions = positions;
     }
 
     writePositions(positions: Map<string,Position>) {
