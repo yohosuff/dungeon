@@ -3,6 +3,7 @@
   <div
     *ngFor="let player of game.otherPlayers"
     class="player"
+    [style.z-index]="player.position.y"
     [style.left]="(player.position.x * 32) + 'px'"
     [style.top]="(player.position.y * 32) + 'px'"
     (transitionend)="onOtherPlayerTransitionEnd(player)"
@@ -25,6 +26,7 @@
   <div
     *ngIf="game.me.email"
     class="player"
+    [style.z-index]="game.me.position.y"
     [style.left]="(game.me.position.x * 32) + 'px'"
     [style.top]="(game.me.position.y * 32) + 'px'"
     (transitionend)="onTransitionEnd()"
