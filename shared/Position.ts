@@ -8,11 +8,7 @@ export class Position {
     }
 
     equals(position: Position) {
-        const result =
-            this.x === position.x && 
-            this.y === position.y;
-
-        return result;
+        return this.x === position.x && this.y === position.y;
     }
 
     clone(): Position {
@@ -20,9 +16,6 @@ export class Position {
     }
 
     static reconstruct(data: Position): Position {
-        const position = new Position();
-        position.x = data.x;
-        position.y = data.y;
-        return position;
+        return new Position(data.x, data.y);
     }
 }

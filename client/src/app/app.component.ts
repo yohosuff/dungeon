@@ -161,15 +161,13 @@ export class AppComponent {
   }
 
   onOtherPlayerTransitionEnd(player: PlayerDto) {
-    if(player.action === 'walk-left') {
-      player.action = 'face-left';
-    } else if(player.action === 'walk-right') {
-      player.action = 'face-right';
-    } else if (player.action === 'walk-up') {
-      player.action = 'face-up';
-    } else if (player.action === 'walk-down') {
-      player.action = 'face-down';
-    }
+    console.log('onOtherPlayerTransitionEnd', player.action);
+    player.action = this.getStopWalkingAction(player.action as string);
+  }
+
+  getStopWalkingAction(action: string) {
+    const direction = action.split("-")[1];
+    return `face-${direction}`;
   }
 
   @HostListener('document:keydown', ['$event'])

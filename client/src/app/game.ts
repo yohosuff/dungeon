@@ -64,7 +64,7 @@ export class Game {
 
             playerDto = PlayerDto.reconstruct(playerDto);
 
-            console.log('authenticatedSocket DungeonEvent.UpdatePosition');
+            console.log('authenticatedSocket DungeonEvent.UpdatePlayer');
 
             if (playerDto.email === this.me.email) {
                 this.waitingForServer = false;
