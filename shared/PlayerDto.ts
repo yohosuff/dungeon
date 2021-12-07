@@ -5,6 +5,7 @@ export class PlayerDto {
     email?: string;
     action?: string;
     direction?: string;
+    avatar?: string;
 
     constructor(x: number = 0, y: number = 0) {
         this.position = new Position(x, y);
@@ -16,6 +17,7 @@ export class PlayerDto {
         dto.email = data.email;
         dto.action = data.action;
         dto.direction = data.direction;
+        dto.avatar = data.avatar;
         return dto;
     }
 }

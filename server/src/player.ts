@@ -9,10 +9,20 @@ export class Player {
     socket?: Socket;
     position: Position;
     direction: string;
+    avatar: string;
 
     constructor(email: string, game: Game) {
         this.game = game;
         this.email = email;
+
+        // temporary code to get started
+        if(email === 'joey.goertzen@gmail.com') {
+            this.avatar = 'brad';
+        } else if(email === 'jody.goertzen@gmail.com') {
+            this.avatar = 'jack';
+        } else {
+            this.avatar = 'jack';
+        }
     }
 
     attachSocket(socket: Socket) {
@@ -97,6 +107,7 @@ export class Player {
         dto.position = this.position;
         dto.email = this.email;
         dto.direction = this.direction;
+        dto.avatar = this.avatar;
         return dto;
     }
 }
