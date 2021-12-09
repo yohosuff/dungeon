@@ -3,3 +3,4 @@ export * from './Position';
 export * from './HelloDto';
 export * from './DungeonEvent';
 export * from './Credential';
+export * from './Tile';

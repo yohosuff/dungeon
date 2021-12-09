@@ -45,6 +45,19 @@
       src="assets/{{game.me.avatar}}.png"
     >
   </div>
+
+  <!-- tiles -->
+
+  <div
+    *ngFor="let tile of game.tiles"
+    class="tile"
+    [style.z-index]="tile.position.y - 3"
+    [style.left]="(tile.position.x * 32 + 16) + 'px'"
+    [style.top]="(tile.position.y * 32 + 40) + 'px'"
+  >
+    <img src="assets/tile.png">
+  </div>
+
 </div>
 
 <div class="position-absolute bottom-0 mb-1 ms-1">

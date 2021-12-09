@@ -1,5 +1,5 @@
 import { Socket } from "socket.io-client";
-import { DungeonEvent, HelloDto, PlayerDto, Position } from "../../../shared";
+import { DungeonEvent, HelloDto, PlayerDto, Tile } from "../../../shared";
 
 export class Game {
     
@@ -13,6 +13,8 @@ export class Game {
     me: PlayerDto;
     otherPlayers: PlayerDto[];
     autoMoveRight: boolean;
+
+    tiles: Tile[];
     
     constructor() {
         this.autoMoveRight = false;
@@ -21,6 +23,25 @@ export class Game {
         this.waitingForServer = false;
         this.transitioning = false;
         this.input = new Map<string, boolean>();
+
+        // temporary - move to server, add view port so we can see only a limited number of tiles
+        // add tile type (eg 1 is floor, 2 is lava)
+        this.tiles = [
+            new Tile(11, 10),
+            // side wall
+            new Tile(5, 10),
+            new Tile(5, 11),
+            new Tile(5, 12),
+            new Tile(5, 13),
+            new Tile(5, 14),
+            // bottom wall
+            new Tile(8, 16),
+            new Tile(9, 16),
+            new Tile(10, 16),
+            new Tile(11, 16),
+            new Tile(12, 16),
+            
+        ];
     }
 
     connect(authenticatedSocket: Socket) {
@@ -133,7 +154,10 @@ export class Game {
             case 'up': newPosition.y -= 1; break;
         }
 
-        const blocked = this.otherPlayers.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
+        const playerCollision = this.otherPlayers.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
+        const onTile = this.tiles.some(tile => tile.position.equals(newPosition));
+
+        const blocked = playerCollision || !onTile;
 
         if (blocked) {
             this.me.action = `face-${direction}`;

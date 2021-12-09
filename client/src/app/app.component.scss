@@ -5,6 +5,10 @@ $down: 10;
 $right: 11;
 $animationSpeed: 400ms;
 
+.tile {
+    position: absolute;
+}
+
 .player {
     transition: left 200ms linear, top 200ms linear;
     width: $size;
