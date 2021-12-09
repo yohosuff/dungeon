@@ -1,5 +1,6 @@
 import { Position } from ".";
 
+// rename this PlayerData
 export class PlayerDto {
     position: Position;
     email?: string;

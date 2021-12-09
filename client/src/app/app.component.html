@@ -1,7 +1,7 @@
 <div *ngIf="authenticatedSocketConnected">
   
   <div
-    *ngFor="let player of game.otherPlayers"
+    *ngFor="let player of game.dungeon.otherPlayers"
     class="player"
     [style.z-index]="player.position.y"
     [style.left]="(player.position.x * 32) + 'px'"
@@ -24,32 +24,32 @@
   </div>
   
   <div
-    *ngIf="game.me.email"
+    *ngIf="game.dungeon.me.email"
     class="player"
-    [style.z-index]="game.me.position.y"
-    [style.left]="(game.me.position.x * 32) + 'px'"
-    [style.top]="(game.me.position.y * 32) + 'px'"
+    [style.z-index]="game.dungeon.me.position.y"
+    [style.left]="(game.dungeon.me.position.x * 32) + 'px'"
+    [style.top]="(game.dungeon.me.position.y * 32) + 'px'"
     (transitionend)="onTransitionEnd()"
   >
     <img
       [ngClass]="{
-        'face-left': game.me.action === 'face-left',
-        'face-right': game.me.action === 'face-right',
-        'face-up': game.me.action === 'face-up',
-        'face-down': game.me.action === 'face-down',
-        'walk-left': game.me.action === 'walk-left',
-        'walk-right': game.me.action === 'walk-right',
-        'walk-up': game.me.action === 'walk-up',
-        'walk-down': game.me.action === 'walk-down'
+        'face-left': game.dungeon.me.action === 'face-left',
+        'face-right': game.dungeon.me.action === 'face-right',
+        'face-up': game.dungeon.me.action === 'face-up',
+        'face-down': game.dungeon.me.action === 'face-down',
+        'walk-left': game.dungeon.me.action === 'walk-left',
+        'walk-right': game.dungeon.me.action === 'walk-right',
+        'walk-up': game.dungeon.me.action === 'walk-up',
+        'walk-down': game.dungeon.me.action === 'walk-down'
       }"
-      src="assets/{{game.me.avatar}}.png"
+      src="assets/{{game.dungeon.me.avatar}}.png"
     >
   </div>
 
   <!-- tiles -->
 
   <div
-    *ngFor="let tile of game.tiles"
+    *ngFor="let tile of game.dungeon.tiles"
     class="tile"
     [style.z-index]="tile.position.y - 3"
     [style.left]="(tile.position.x * 32 + 16) + 'px'"
@@ -68,7 +68,7 @@
 
   <div *ngIf="authenticatedSocketConnected" class="d-flex align-items-baseline">
     <button type="button" class="btn btn-primary" (click)="logout()"> Logout </button>
-    <div class="ms-2 text-info">{{game.me.email}}</div>
+    <div class="ms-2 text-info">{{game.dungeon.me.email}}</div>
   </div>
 
   <div *ngIf="anonymousSocketConnected">

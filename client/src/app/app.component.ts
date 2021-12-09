@@ -17,11 +17,9 @@ export class AppComponent {
   authenticatedSocket!: Socket;
   authenticatedSocketConnected: boolean;
 
-  game: Game;
+  game!: Game;
 
   constructor() {  
-    this.game = new Game();
-
     this.anonymousSocketConnected = false;
     this.authenticatedSocketConnected = false;
     
@@ -67,6 +65,8 @@ export class AppComponent {
   establishAuthenticatedSocketConnection(token: string) {
     const authenticatedSocket = io(`${Constants.BaseUrl}/authenticated`, { auth: { token } });
 
+    this.authenticatedSocket = authenticatedSocket;
+
     authenticatedSocket.on(DungeonEvent.ConnectError, (error: Error) => {
       console.warn('could not connect authenticated socket with token', token);
       console.warn(error);
@@ -74,21 +74,20 @@ export class AppComponent {
       authenticatedSocket.removeAllListeners();
     });
 
-    this.authenticatedSocket = authenticatedSocket;
-
     authenticatedSocket.on(DungeonEvent.Connect, () => {
-      if(this.anonymousSocket) {
+      if (this.anonymousSocket) { 
         this.anonymousSocket.disconnect();
       }
+
       this.authenticatedSocketConnected = true;
+      this.game = new Game();
+      this.game.connect(authenticatedSocket);
     });
 
     authenticatedSocket.on(DungeonEvent.Disconnect, () => {
       this.authenticatedSocketConnected = false;
       this.establishAnonymousSocketConnection();
     });
-
-    return authenticatedSocket;
   }
 
   logout() {
@@ -97,28 +96,25 @@ export class AppComponent {
   }
 
   startGame(token: string) {
-    console.log('startGame');
-    const authenticatedSocket = this.establishAuthenticatedSocketConnection(token);
-    this.game.connect(authenticatedSocket);
+    this.establishAuthenticatedSocketConnection(token);
   }
 
   onTransitionEnd() {
     const game = this.game as Game;
     game.transitioning = false;
     
-    if(game.me.action === 'walk-left') {
-      game.me.action = 'face-left';
-    } else if(game.me.action === 'walk-right') {
-      game.me.action = 'face-right';
-    } else if (game.me.action === 'walk-up') {
-      game.me.action = 'face-up';
-    } else if (game.me.action === 'walk-down') {
-      game.me.action = 'face-down';
+    if(game.dungeon.me.action === 'walk-left') {
+      game.dungeon.me.action = 'face-left';
+    } else if(game.dungeon.me.action === 'walk-right') {
+      game.dungeon.me.action = 'face-right';
+    } else if (game.dungeon.me.action === 'walk-up') {
+      game.dungeon.me.action = 'face-up';
+    } else if (game.dungeon.me.action === 'walk-down') {
+      game.dungeon.me.action = 'face-down';
     }
   }
 
   onOtherPlayerTransitionEnd(player: PlayerDto) {
-    console.log('onOtherPlayerTransitionEnd', player.action);
     player.action = this.getStopWalkingAction(player.action as string);
   }
 
@@ -129,18 +125,17 @@ export class AppComponent {
 
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
-    const game = this.game as Game;
-    game.input.set(event.code, true);
+    this.game.input.set(event.code, true);
   }
 
   @HostListener('document:keyup', ['$event'])
   onKeyUp(event: KeyboardEvent) {
-    const game = this.game as Game;
+    const game = this.game;
     game.input.set(event.code, false);
 
     if (event.code === 'KeyP') {
-      console.log('other players', game.otherPlayers);
-      console.log('me', game.me);
+      console.log('other players', game.dungeon.otherPlayers);
+      console.log('me', game.dungeon.me);
     }
 
     if (event.code === 'KeyM') {
