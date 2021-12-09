@@ -69,34 +69,42 @@ export class Game {
             return;
         }
 
-        // use a map here between input key and direction
+        // move this into an InputManager
+        const map = new Map<string, string>();
 
-        const right = this.input.get('KeyD') || this.input.get('ArrowRight');
-        const left = this.input.get('KeyA') || this.input.get('ArrowLeft');
-        const down = this.input.get('KeyS') || this.input.get('ArrowDown');
-        const up = this.input.get('KeyW') || this.input.get('ArrowUp');
+        map.set('KeyD', 'right');
+        map.set('KeyA', 'left');
+        map.set('KeyS', 'down');
+        map.set('KeyW', 'up');
+        map.set('ArrowRight', 'right');
+        map.set('ArrowLeft', 'left');
+        map.set('ArrowDown', 'down');
+        map.set('ArrowUp', 'up');
+        
+        const inputKeys = [
+            'KeyD', 'ArrowRight',
+            'KeyA', 'ArrowLeft',
+            'KeyS', 'ArrowDown',
+            'KeyW', 'ArrowUp',
+        ];
 
         let direction;
 
-        if (right || this.autoMoveRight) {
-            direction = 'right';
-        } else if (left) {
-            direction = 'left';
-        } else if (down) {
-            direction = 'down';
-        } else if (up) {
-            direction = 'up';
-        } else {
-            direction = '';
+        for(let key of inputKeys) {
+            const pressed = this.input.get(key);
+            if(pressed) {
+                direction = map.get(key);
+                break;
+            }
         }
 
         if(!direction) {
             return;
         }
 
-        const moveMeResult = this.dungeon.moveMe(direction);
+        const result = this.dungeon.moveMe(direction);
 
-        switch(moveMeResult) {
+        switch(result) {
             case 'position-changed':
                 this.transitioning = true;
                 this.waitingForServer = true;
