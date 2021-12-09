@@ -1,9 +1,7 @@
 import { Component, HostListener } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { io, Socket } from 'socket.io-client';
 import { DungeonEvent, PlayerDto } from '../../../shared';
 import { Game } from './game';
-import { Modal } from 'bootstrap';
 import { Constants } from './constants';
 
 @Component({
@@ -13,25 +11,16 @@ import { Constants } from './constants';
 })
 export class AppComponent {
 
-  form: FormGroup;
-
-  anonymousSocket?: Socket;
+  anonymousSocket!: Socket;
   anonymousSocketConnected: boolean;
 
-  authenticatedSocket?: Socket;
+  authenticatedSocket!: Socket;
   authenticatedSocketConnected: boolean;
 
   game: Game;
 
-  constructor(
-    private _formBuilder: FormBuilder
-  ) {  
+  constructor() {  
     this.game = new Game();
-
-    this.form = this._formBuilder.group({
-      email: ['', Validators.email],
-      password: ['', Validators.required],
-    });
 
     this.anonymousSocketConnected = false;
     this.authenticatedSocketConnected = false;
@@ -88,13 +77,15 @@ export class AppComponent {
     this.authenticatedSocket = authenticatedSocket;
 
     authenticatedSocket.on(DungeonEvent.Connect, () => {
-        this.anonymousSocket?.disconnect();
-        this.authenticatedSocketConnected = true;
+      if(this.anonymousSocket) {
+        this.anonymousSocket.disconnect();
+      }
+      this.authenticatedSocketConnected = true;
     });
 
     authenticatedSocket.on(DungeonEvent.Disconnect, () => {
-        this.authenticatedSocketConnected = false;
-        this.establishAnonymousSocketConnection();
+      this.authenticatedSocketConnected = false;
+      this.establishAnonymousSocketConnection();
     });
 
     return authenticatedSocket;
@@ -109,40 +100,6 @@ export class AppComponent {
     console.log('startGame');
     const authenticatedSocket = this.establishAuthenticatedSocketConnection(token);
     this.game.connect(authenticatedSocket);
-  }
-
-  getModalInstance(id: string) {
-    const modalElement = document.getElementById(id) as Element;
-    const modal = Modal.getInstance(modalElement) as Modal;
-    return modal;
-  }
-
-  showRegisterModal() {
-    const registerModalElement = document.getElementById('registerModal') as Element;
-    const registerModal = new Modal(registerModalElement);
-    this.form.reset();
-    registerModal.show();
-  }
-
-  register() {
-    const email = this.form.get('email')?.value;
-    const password = this.form.get('password')?.value;
-    this.anonymousSocket?.emit(DungeonEvent.Register, { email, password });
-    this.getModalInstance('registerModal').hide();
-  }
-
-  showLoginModal() {
-    const loginModalElement = document.getElementById('loginModal') as Element;
-    const loginModal = new Modal(loginModalElement);
-    this.form.reset();
-    loginModal.show();
-  }
-
-  login() {
-    const email = this.form.get('email')?.value;
-    const password = this.form.get('password')?.value;
-    this.anonymousSocket?.emit(DungeonEvent.Login, { email, password });
-    this.getModalInstance('loginModal').hide();
   }
 
   onTransitionEnd() {
