@@ -1,14 +1,20 @@
-import { PlayerDto, Tile } from "../../../shared";
+import { Injectable } from "@angular/core";
+import { HelloDto, PlayerDto, Tile } from "../../../shared";
+import { ClientEvent } from "./client-event";
+import { MessageBus } from "./message-bus";
 
-// the dungeon is not aware of sockets, input, etc...
-// it is only concerned with players and tiles
+@Injectable({
+    providedIn: 'root'
+})
 export class Dungeon {
 
     me: PlayerDto;
     otherPlayers: PlayerDto[];
     tiles: Tile[];
 
-    constructor(){
+    constructor(
+        private messageBus: MessageBus,
+    ) {
         this.me = new PlayerDto();
         this.otherPlayers = [];
 
@@ -30,6 +36,24 @@ export class Dungeon {
             new Tile(12, 16),
             
         ];
+
+        this.messageBus.getSubject(ClientEvent.ServerSaidHello)?.subscribe((helloDto: HelloDto) => {
+            console.log('dungeon got ServerSaidHello message', helloDto);
+            this.loadPlayers(helloDto.players, helloDto.email);
+            this.me.action = 'face-right';
+        });
+
+        this.messageBus.getSubject(ClientEvent.ServerAddedPlayer)?.subscribe((playerDto: PlayerDto) => {
+            this.addPlayer(playerDto);
+        });
+
+        this.messageBus.getSubject(ClientEvent.ServerUpdatedPlayer)?.subscribe((playerDto: PlayerDto) => {
+            if (playerDto.email === this.me.email) {
+                this.messageBus.publish(ClientEvent.ServerUpdatedMe, playerDto);
+            } else {
+                this.updatePlayer(playerDto);
+            }
+        });        
     }
 
     moveMe(direction: string): string {

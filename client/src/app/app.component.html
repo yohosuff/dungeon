@@ -1,7 +1,7 @@
-<div *ngIf="authenticatedSocketConnected">
+<div *ngIf="communicationService.authenticatedSocketConnected">
   
   <div
-    *ngFor="let player of game.dungeon.otherPlayers"
+    *ngFor="let player of dungeon.otherPlayers"
     class="player"
     [style.z-index]="player.position.y"
     [style.left]="(player.position.x * 32) + 'px'"
@@ -24,32 +24,32 @@
   </div>
   
   <div
-    *ngIf="game.dungeon.me.email"
+    *ngIf="dungeon.me.email"
     class="player"
-    [style.z-index]="game.dungeon.me.position.y"
-    [style.left]="(game.dungeon.me.position.x * 32) + 'px'"
-    [style.top]="(game.dungeon.me.position.y * 32) + 'px'"
+    [style.z-index]="dungeon.me.position.y"
+    [style.left]="(dungeon.me.position.x * 32) + 'px'"
+    [style.top]="(dungeon.me.position.y * 32) + 'px'"
     (transitionend)="onTransitionEnd()"
   >
     <img
       [ngClass]="{
-        'face-left': game.dungeon.me.action === 'face-left',
-        'face-right': game.dungeon.me.action === 'face-right',
-        'face-up': game.dungeon.me.action === 'face-up',
-        'face-down': game.dungeon.me.action === 'face-down',
-        'walk-left': game.dungeon.me.action === 'walk-left',
-        'walk-right': game.dungeon.me.action === 'walk-right',
-        'walk-up': game.dungeon.me.action === 'walk-up',
-        'walk-down': game.dungeon.me.action === 'walk-down'
+        'face-left': dungeon.me.action === 'face-left',
+        'face-right': dungeon.me.action === 'face-right',
+        'face-up': dungeon.me.action === 'face-up',
+        'face-down': dungeon.me.action === 'face-down',
+        'walk-left': dungeon.me.action === 'walk-left',
+        'walk-right': dungeon.me.action === 'walk-right',
+        'walk-up': dungeon.me.action === 'walk-up',
+        'walk-down': dungeon.me.action === 'walk-down'
       }"
-      src="assets/{{game.dungeon.me.avatar}}.png"
+      src="assets/{{dungeon.me.avatar}}.png"
     >
   </div>
 
   <!-- tiles -->
 
   <div
-    *ngFor="let tile of game.dungeon.tiles"
+    *ngFor="let tile of dungeon.tiles"
     class="tile"
     [style.z-index]="tile.position.y - 3"
     [style.left]="(tile.position.x * 32 + 16) + 'px'"
@@ -62,16 +62,16 @@
 
 <div class="position-absolute bottom-0 mb-1 ms-1">
   
-  <div *ngIf="!anonymousSocketConnected && !authenticatedSocketConnected">
+  <div *ngIf="!communicationService.anonymousSocketConnected && !communicationService.authenticatedSocketConnected">
     Connecting....
   </div>
 
-  <div *ngIf="authenticatedSocketConnected" class="d-flex align-items-baseline">
+  <div *ngIf="communicationService.authenticatedSocketConnected" class="d-flex align-items-baseline">
     <button type="button" class="btn btn-primary" (click)="logout()"> Logout </button>
-    <div class="ms-2 text-info">{{game.dungeon.me.email}}</div>
+    <div class="ms-2 text-info">{{dungeon.me.email}}</div>
   </div>
 
-  <div *ngIf="anonymousSocketConnected">
-    <authentication-widget [anonymousSocket]="anonymousSocket"></authentication-widget>
+  <div *ngIf="communicationService.anonymousSocketConnected">
+    <authentication-widget [anonymousSocket]="communicationService.anonymousSocket"></authentication-widget>
   </div>
 </div>
