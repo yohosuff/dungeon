@@ -1,7 +1,7 @@
 import { Namespace, Server } from 'socket.io';
 import { Player } from './Player';
 import { PositionManager } from './position-manager';
-import { DungeonEvent, Credential } from '../../shared';
+import { DungeonEvent, Credential, Tile } from '../../shared';
 import { verify, sign } from 'jsonwebtoken';
 import { existsSync, writeFileSync, readFileSync } from 'fs';
 import { hashSync, compareSync } from 'bcryptjs';
@@ -11,6 +11,7 @@ export class Game {
     players: Player[];
     emails: Map<string, string>;
     positionManager: PositionManager;
+    tiles: Map<string, Tile>;
 
     io: Server;
 
@@ -18,11 +19,12 @@ export class Game {
     authenticatedNamespace: Namespace;
     
     TOKEN_SECRET = '123qwe';
-
+    
     constructor() {
         this.emails = new Map<string, string>();
         this.positionManager = new PositionManager();
                 
+        this.buildTiles();
         this.loadPlayers();
 
         this.io = new Server({
@@ -34,6 +36,35 @@ export class Game {
 
         this.anonymousNamespace = this.io.of('anonymous');
         this.authenticatedNamespace = this.io.of('authenticated');
+    }
+
+    buildTiles() {
+        const rows = [
+            [0,1,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0],
+            [0,1,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,1,1,1,1,1,1],
+            [0,0,0,0,1,1,1,1,1,1],
+            [0,0,0,0,0,1,0,1,0,1],
+            [0,0,0,0,0,1,0,1,0,1],
+            [0,0,0,0,0,1,1,1,1,1],
+            [0,0,0,0,0,0,0,0,0,0],
+        ];
+
+        const tiles = new Map<string, Tile>();
+
+        for(let y = 0; y < rows.length; ++y) {
+            const row = rows[y];
+            for(let x = 0; x < row.length; ++x) {
+                const key = `${x},${y}`;
+                const type = row[x];
+                const tile = new Tile(x, y, type);
+                tiles.set(key, tile);
+            }
+        }
+
+        this.tiles = tiles;
     }
 
     private loadPlayers() {

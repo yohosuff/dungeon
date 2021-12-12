@@ -54,6 +54,7 @@ export class Player {
             const helloDto = new HelloDto();
             helloDto.players = this.game.players.map(player => player.getDto());
             helloDto.email = this.email;
+            helloDto.tiles = JSON.stringify(Array.from(this.game.tiles.entries()));
             socket.emit(DungeonEvent.Hello, helloDto);
         });
 
@@ -70,7 +71,10 @@ export class Player {
                 case 'up': newPosition.y -= 1; break;
             }
 
-            const blocked = this.game.players.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
+            const playerCollision = this.game.players.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
+            // add position.toCoordinateString to quickly get "x,y"
+            const onTile = this.game.tiles.get(`${newPosition.x},${newPosition.y}`)?.type === 1;
+            const blocked = playerCollision || !onTile;
 
             if(blocked) {
                 // await new Promise(resolve => setTimeout(resolve, 200)); // simulate lag

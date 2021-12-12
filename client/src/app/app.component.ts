@@ -14,6 +14,8 @@ import { ClientEvent } from './client-event';
 })
 export class AppComponent {
 
+  Z_INDEX_OFFSET = 10000;
+
   constructor(
     public dungeon: Dungeon,
     public communicationService: CommunicationService,

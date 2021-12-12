@@ -10,7 +10,8 @@ export class Dungeon {
 
     me: PlayerDto;
     otherPlayers: PlayerDto[];
-    tiles: Tile[];
+    tilesArray!: Tile[];
+    tilesMap!: Map<string, Tile>;
 
     constructor(
         private messageBus: MessageBus,
@@ -18,29 +19,12 @@ export class Dungeon {
         this.me = new PlayerDto();
         this.otherPlayers = [];
 
-        // temporary - move to server, add view port so we can see only a limited number of tiles
-        // add tile type (eg 1 is floor, 2 is lava)
-        this.tiles = [
-            new Tile(11, 10),
-            // side wall
-            new Tile(5, 10),
-            new Tile(5, 11),
-            new Tile(5, 12),
-            new Tile(5, 13),
-            new Tile(5, 14),
-            // bottom wall
-            new Tile(8, 16),
-            new Tile(9, 16),
-            new Tile(10, 16),
-            new Tile(11, 16),
-            new Tile(12, 16),
-            
-        ];
-
         this.messageBus.subscribe(ClientEvent.ServerSaidHello, (helloDto: HelloDto) => {
             console.log('dungeon got ServerSaidHello message', helloDto);
             this.loadPlayers(helloDto.players, helloDto.email);
             this.me.action = 'face-right';
+            this.tilesMap = new Map<string, Tile>(JSON.parse(helloDto.tiles));
+            this.tilesArray = Array.from(this.tilesMap.values());
         });
 
         this.messageBus.subscribe(ClientEvent.ServerAddedPlayer, (playerDto: PlayerDto) => {
@@ -70,7 +54,7 @@ export class Dungeon {
         //////////////////////////////////////////////
 
         const playerCollision = this.otherPlayers.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
-        const onTile = true || this.tiles.some(tile => tile.position.equals(newPosition));
+        const onTile = this.tilesMap.get(`${newPosition.x},${newPosition.y}`)?.type === 1;
 
         const blocked = playerCollision || !onTile;
 

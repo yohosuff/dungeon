@@ -3,7 +3,7 @@
   <div
     *ngFor="let player of dungeon.otherPlayers"
     class="player"
-    [style.z-index]="player.position.y"
+    [style.z-index]="player.position.y + Z_INDEX_OFFSET"
     [style.left]="(player.position.x * 32) + 'px'"
     [style.top]="(player.position.y * 32) + 'px'"
     (transitionend)="onOtherPlayerTransitionEnd(player)"
@@ -26,7 +26,7 @@
   <div
     *ngIf="dungeon.me.email"
     class="player"
-    [style.z-index]="dungeon.me.position.y"
+    [style.z-index]="dungeon.me.position.y + Z_INDEX_OFFSET"
     [style.left]="(dungeon.me.position.x * 32) + 'px'"
     [style.top]="(dungeon.me.position.y * 32) + 'px'"
     (transitionend)="onTransitionEnd()"
@@ -49,13 +49,14 @@
   <!-- tiles -->
 
   <div
-    *ngFor="let tile of dungeon.tiles"
+    *ngFor="let tile of dungeon.tilesArray"
     class="tile"
-    [style.z-index]="tile.position.y - 3"
+    [style.z-index]="tile.position.y - 3 + Z_INDEX_OFFSET"
     [style.left]="(tile.position.x * 32 + 16) + 'px'"
     [style.top]="(tile.position.y * 32 + 40) + 'px'"
   >
-    <img src="assets/tile.png">
+    <img *ngIf="tile.type === 1" src="assets/tile.png">
+    <div *ngIf="tile.type === 0">{{tile.position.x}},{{tile.position.y}}</div>
   </div>
 
 </div>
