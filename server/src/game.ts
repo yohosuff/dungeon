@@ -1,6 +1,6 @@
 import { Namespace, Server } from 'socket.io';
 import { Player } from './Player';
-import { PositionManager } from './PositionManager';
+import { PositionManager } from './position-manager';
 import { DungeonEvent, Credential } from '../../shared';
 import { verify, sign } from 'jsonwebtoken';
 import { existsSync, writeFileSync, readFileSync } from 'fs';
