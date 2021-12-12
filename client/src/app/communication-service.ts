@@ -27,7 +27,7 @@ export class CommunicationService {
         this.transitioning = false;
         this.waitingForServer = false;
 
-        this.messageBus.getSubject(ClientEvent.ServerUpdatedMe)?.subscribe((playerDto: PlayerDto) => {
+        this.messageBus.subscribe(ClientEvent.ServerUpdatedMe, (playerDto: PlayerDto) => {
             this.waitingForServer = false;
         });
     }

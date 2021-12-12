@@ -28,7 +28,7 @@ export class AppComponent {
       this.communicationService.establishAnonymousSocketConnection();
     }
 
-    this.messageBus.getSubject(ClientEvent.ServerSaidHello)?.subscribe((helloDto: HelloDto) => {
+    this.messageBus.subscribe(ClientEvent.ServerSaidHello, (helloDto: HelloDto) => {
       this.loop();
     });
   }

@@ -37,23 +37,23 @@ export class Dungeon {
             
         ];
 
-        this.messageBus.getSubject(ClientEvent.ServerSaidHello)?.subscribe((helloDto: HelloDto) => {
+        this.messageBus.subscribe(ClientEvent.ServerSaidHello, (helloDto: HelloDto) => {
             console.log('dungeon got ServerSaidHello message', helloDto);
             this.loadPlayers(helloDto.players, helloDto.email);
             this.me.action = 'face-right';
         });
 
-        this.messageBus.getSubject(ClientEvent.ServerAddedPlayer)?.subscribe((playerDto: PlayerDto) => {
+        this.messageBus.subscribe(ClientEvent.ServerAddedPlayer, (playerDto: PlayerDto) => {
             this.addPlayer(playerDto);
         });
 
-        this.messageBus.getSubject(ClientEvent.ServerUpdatedPlayer)?.subscribe((playerDto: PlayerDto) => {
+        this.messageBus.subscribe(ClientEvent.ServerUpdatedPlayer, (playerDto: PlayerDto) => {
             if (playerDto.email === this.me.email) {
                 this.messageBus.publish(ClientEvent.ServerUpdatedMe, playerDto);
             } else {
                 this.updatePlayer(playerDto);
             }
-        });        
+        });
     }
 
     moveMe(direction: string): string {

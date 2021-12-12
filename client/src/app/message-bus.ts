@@ -7,7 +7,7 @@ import { ClientEvent } from "./client-event";
 })
 export class MessageBus {
 
-    subjects: Map<string, Subject<any>>;
+    private subjects: Map<string, Subject<any>>;
 
     constructor() {
         this.subjects = new Map<string, Subject<any>>();
@@ -18,10 +18,10 @@ export class MessageBus {
     }
     
     public publish<T>(dungeonEvent: string, data: T) {
-        this.subjects.get(dungeonEvent)?.next(data);
+        this.subjects.get(dungeonEvent)!.next(data);
     }
 
-    public getSubject(dungeonEvent: string) {
-        return this.subjects.get(dungeonEvent);
+    public subscribe<T>(dungeonEvent: string, subscriber: (data: T) => void) {
+        return this.subjects.get(dungeonEvent)!.subscribe(subscriber);
     }
 }
