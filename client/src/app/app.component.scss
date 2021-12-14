@@ -5,8 +5,19 @@ $down: 10;
 $right: 11;
 $animationSpeed: 400ms;
 
+.dungeon {
+    position: absolute;
+    left: 100px;
+    top: 100px;
+}
+
 .tile {
     position: absolute;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .player {
