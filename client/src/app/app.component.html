@@ -55,10 +55,9 @@
     [style.left]="(tile.position.x * 32) + 'px'"
     [style.top]="(tile.position.y * 32) + 'px'"
   >
-    <img *ngIf="tile.type === 1" src="assets/tile.png">
-    <div *ngIf="tile.type === 0">{{tile.position.x}},{{tile.position.y}}</div>
+    <img *ngIf="tile.type === 1" src="assets/rect_gray0.png">
+    <img *ngIf="tile.type === 0" src="assets/dngn_deep_water.png">
   </div>
-
 
 </div>
 
