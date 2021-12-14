@@ -15,10 +15,8 @@ export class Player {
 
     // temporary code to get started
     setAvatar() {
-        if(this.email === 'joey.goertzen@gmail.com') {
+        if(this.email.indexOf('joey') > -1) {
             this.avatar = 'brad';
-        } else if(this.email === 'jody.goertzen@gmail.com') {
-            this.avatar = 'jack';
         } else {
             this.avatar = 'jack';
         }
