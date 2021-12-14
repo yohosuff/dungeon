@@ -3,26 +3,34 @@ import { Game } from "./Game";
 import { DungeonEvent, HelloDto, PlayerDto, Position } from "../../shared";
 
 export class Player {
-
+    
     email: string;
     game: Game;
-    socket?: Socket;
+    socket: Socket;
     position: Position;
     direction: string;
     avatar: string;
 
-    constructor(email: string, game: Game) {
-        this.game = game;
-        this.email = email;
+    constructor() {}
 
-        // temporary code to get started
-        if(email === 'joey.goertzen@gmail.com') {
+    // temporary code to get started
+    setAvatar() {
+        if(this.email === 'joey.goertzen@gmail.com') {
             this.avatar = 'brad';
-        } else if(email === 'jody.goertzen@gmail.com') {
+        } else if(this.email === 'jody.goertzen@gmail.com') {
             this.avatar = 'jack';
         } else {
             this.avatar = 'jack';
         }
+    }
+
+    static reconstruct(data: PlayerDto) {
+        const player = new Player();
+        player.email = data.email;
+        player.position = Position.reconstruct(data.position);
+        player.direction = data.direction;
+        player.avatar = data.avatar;
+        return player;
     }
 
     attachSocket(socket: Socket) {
@@ -44,7 +52,7 @@ export class Player {
         }
 
         this.position = position;
-        this.game.positionManager.savePosition(this);
+        this.game.playerManager.savePlayer(this);
     }
 
     setupListeners() {
@@ -59,7 +67,7 @@ export class Player {
         });
 
         socket.on(DungeonEvent.Move, async direction => {
-            
+
             this.direction = direction;
             
             const newPosition = this.position.clone();
@@ -79,7 +87,7 @@ export class Player {
                 // await new Promise(resolve => setTimeout(resolve, 200)); // simulate lag
             } else {
                 this.position = Position.reconstruct(newPosition);
-                this.game.positionManager.savePosition(this);
+                this.game.playerManager.savePlayer(this);
             }
 
             this.emitUpdate();

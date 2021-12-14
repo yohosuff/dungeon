@@ -16,7 +16,7 @@ export class PlayerDto {
         const dto = new PlayerDto();
         dto.position = Position.reconstruct(data.position);
         dto.email = data.email;
-        dto.action = data.action;
+        dto.action = `face-${data.direction}`;
         dto.direction = data.direction;
         dto.avatar = data.avatar;
         return dto;

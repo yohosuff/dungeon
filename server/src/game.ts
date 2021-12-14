@@ -1,16 +1,17 @@
 import { Namespace, Server } from 'socket.io';
 import { Player } from './Player';
-import { PositionManager } from './position-manager';
+import { PlayerManager } from './player-manager';
 import { DungeonEvent, Credential, Tile } from '../../shared';
 import { verify, sign } from 'jsonwebtoken';
 import { existsSync, writeFileSync, readFileSync } from 'fs';
 import { hashSync, compareSync } from 'bcryptjs';
+import { Constants } from './constants';
 
 export class Game {
 
     players: Player[];
     emails: Map<string, string>;
-    positionManager: PositionManager;
+    playerManager: PlayerManager;
     tiles: Map<string, Tile>;
 
     io: Server;
@@ -18,11 +19,9 @@ export class Game {
     anonymousNamespace: Namespace;
     authenticatedNamespace: Namespace;
     
-    TOKEN_SECRET = '123qwe';
-    
     constructor() {
         this.emails = new Map<string, string>();
-        this.positionManager = new PositionManager();
+        this.playerManager = new PlayerManager(this);
                 
         this.buildTiles();
         this.loadPlayers();
@@ -41,10 +40,10 @@ export class Game {
     buildTiles() {
         const rows = [
             [0,1,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0],
             [0,1,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,1,1,1,1,1,1],
+            [0,1,0,0,0,0,0,0,0,0],
+            [0,1,0,0,0,0,0,0,0,0],
+            [0,1,1,1,1,1,1,1,1,1],
             [0,0,0,0,1,1,1,1,1,1],
             [0,0,0,0,0,1,0,1,0,1],
             [0,0,0,0,0,1,0,1,0,1],
@@ -70,11 +69,11 @@ export class Game {
     private loadPlayers() {
         this.players = [];
         
-        for(let email of this.positionManager.positions.keys()) {
-            const player = new Player(email, this);
-            player.position = this.positionManager.getPosition(email);
+        for(let email of this.playerManager.players.keys()) {
+            const player = this.playerManager.getPlayer(email);
+            player.game = this;
             this.players.push(player);
-            console.log('loaded player', player.email, player.position);
+            console.log('loaded player', player.getDto());
         }
     }
 
@@ -89,7 +88,7 @@ export class Game {
         this.anonymousNamespace.on(DungeonEvent.Connection, socket => {
             
             socket.on(DungeonEvent.Register, (credential: Credential) => {
-                const path = 'credentials.json';
+                const path = Constants.CREDENTIALS_PATH;
                 
                 if(!existsSync(path)) {
                     writeFileSync(path, JSON.stringify([]));
@@ -109,12 +108,12 @@ export class Game {
                 credentials.push(credential);
                 writeFileSync(path, JSON.stringify(credentials));
                 const payload = { email: credential.email };
-                const token = sign(payload, this.TOKEN_SECRET);
+                const token = sign(payload, Constants.TOKEN_SECRET);
                 socket.emit(DungeonEvent.Registered, token);
             });
 
             socket.on(DungeonEvent.Login, (credential: Credential) => {
-                const path = 'credentials.json';
+                const path = Constants.CREDENTIALS_PATH;
                 
                 if(!existsSync(path)) {
                     writeFileSync(path, JSON.stringify([]));
@@ -138,7 +137,7 @@ export class Game {
                 }
 
                 const payload = { email: credential.email };
-                const token = sign(payload, this.TOKEN_SECRET);
+                const token = sign(payload, Constants.TOKEN_SECRET);
 
                 socket.emit(DungeonEvent.LoginSuccessful, token);
             });
@@ -151,7 +150,7 @@ export class Game {
             let payload;
 
             try {
-                payload = verify(token, this.TOKEN_SECRET);
+                payload = verify(token, Constants.TOKEN_SECRET);
             } catch(err) {
                 next(err);
                 return;
@@ -166,7 +165,10 @@ export class Game {
             let player = this.players.find(player => player.email === email);
 
             if(!player) {
-                player = new Player(email, this);
+                player = new Player();
+                player.email = email;
+                player.game = this;
+                player.setAvatar();
                 player.initializePosition();
                 this.players.push(player);
             }

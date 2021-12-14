@@ -20,9 +20,7 @@ export class Dungeon {
         this.otherPlayers = [];
 
         this.messageBus.subscribe(ClientEvent.ServerSaidHello, (helloDto: HelloDto) => {
-            console.log('dungeon got ServerSaidHello message', helloDto);
             this.loadPlayers(helloDto.players, helloDto.email);
-            this.me.action = 'face-right';
             this.tilesMap = new Map<string, Tile>(JSON.parse(helloDto.tiles));
             this.tilesArray = Array.from(this.tilesMap.values());
         });
