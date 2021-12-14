@@ -33,13 +33,13 @@ export class Player {
 
     initializePosition() {
         const positions = this.game.players.reduce((set, player) => {
-            set.add(`${player.position.x},${player.position.y}`);
+            set.add(player.position.toCoordinateString());
             return set;
         }, new Set<string>());
         
         const position = new Position(0, 0);
 
-        while(positions.has(`${position.x},${position.y}`)) {
+        while(positions.has(position.toCoordinateString())) {
             position.x += 1;
         }
 
@@ -72,8 +72,7 @@ export class Player {
             }
 
             const playerCollision = this.game.players.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
-            // add position.toCoordinateString to quickly get "x,y"
-            const onTile = this.game.tiles.get(`${newPosition.x},${newPosition.y}`)?.type === 1;
+            const onTile = this.game.tiles.get(newPosition.toCoordinateString())?.type === 1;
             const blocked = playerCollision || !onTile;
 
             if(blocked) {

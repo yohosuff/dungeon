@@ -54,7 +54,7 @@ export class Dungeon {
         //////////////////////////////////////////////
 
         const playerCollision = this.otherPlayers.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
-        const onTile = this.tilesMap.get(`${newPosition.x},${newPosition.y}`)?.type === 1;
+        const onTile = this.tilesMap.get(newPosition.toCoordinateString())?.type === 1;
 
         const blocked = playerCollision || !onTile;
 

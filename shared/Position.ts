@@ -18,4 +18,8 @@ export class Position {
     static reconstruct(data: Position): Position {
         return new Position(data.x, data.y);
     }
+
+    toCoordinateString() {
+        return `${this.x},${this.y}`;
+    }
 }
