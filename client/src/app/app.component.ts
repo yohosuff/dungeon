@@ -21,7 +21,7 @@ export class AppComponent {
     public communicationService: CommunicationService,
     private inputManager: InputManager,
     private messageBus: MessageBus,
-  ) {  
+  ) {
     const token = localStorage.getItem(Constants.DungeonToken);
 
     if(token) {

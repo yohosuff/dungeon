@@ -33,50 +33,76 @@ export class CommunicationService {
     }
 
     establishAnonymousSocketConnection() {
-        this.anonymousSocket = io(`${Constants.BaseUrl}/anonymous`);
+        
+        let anonymousSocket = this.anonymousSocket;
 
-        this.anonymousSocket.on(DungeonEvent.Connect, () => {
-            this.anonymousSocketConnected = true;
+        if(anonymousSocket){
+            anonymousSocket.removeAllListeners();
+            anonymousSocket.disconnect();
+        }
+
+        anonymousSocket = io(`${Constants.BaseUrl}/anonymous`);
+
+        this.anonymousSocket = anonymousSocket;
+        
+        anonymousSocket.on(DungeonEvent.Connect, () => {
+            const token = localStorage.getItem(Constants.DungeonToken);
+
+            if(token) {
+                this.establishAuthenticatedSocketConnection(token);
+            } else {
+                this.anonymousSocketConnected = true;
+            }
         });
 
-        this.anonymousSocket.on(DungeonEvent.LoginFailed, () => {
+        anonymousSocket.on(DungeonEvent.LoginFailed, () => {
             console.log('login failed');
         });
 
-        this.anonymousSocket.on(DungeonEvent.EmailAlreadyTaken, () => {
+        anonymousSocket.on(DungeonEvent.EmailAlreadyTaken, () => {
             console.log('email already taken');
         });
 
-        this.anonymousSocket.on(DungeonEvent.LoginSuccessful, token => {
+        anonymousSocket.on(DungeonEvent.LoginSuccessful, token => {
             localStorage.setItem(Constants.DungeonToken, token);
             this.establishAuthenticatedSocketConnection(token);
         });
 
-        this.anonymousSocket.on(DungeonEvent.Registered, token => {
+        anonymousSocket.on(DungeonEvent.Registered, token => {
             localStorage.setItem(Constants.DungeonToken, token);
             this.establishAuthenticatedSocketConnection(token);
         });
 
-        this.anonymousSocket.on(DungeonEvent.Disconnect, () => {
+        anonymousSocket.on(DungeonEvent.Disconnect, () => {
             this.anonymousSocketConnected = false;
         });
     }
 
     establishAuthenticatedSocketConnection(token: string) {
-        const authenticatedSocket = io(`${Constants.BaseUrl}/authenticated`, { auth: { token } });
+
+        let authenticatedSocket = this.authenticatedSocket;
+
+        if(authenticatedSocket) {
+            authenticatedSocket.removeAllListeners();
+            authenticatedSocket.disconnect();
+        }
+
+        authenticatedSocket = io(`${Constants.BaseUrl}/authenticated`, { auth: { token } });
 
         this.authenticatedSocket = authenticatedSocket;
 
         authenticatedSocket.on(DungeonEvent.ConnectError, (error: Error) => {
             console.warn('could not connect authenticated socket with token', token);
             console.warn(error);
-            this.establishAnonymousSocketConnection();
             authenticatedSocket.removeAllListeners();
+            this.establishAnonymousSocketConnection();
         });
 
         authenticatedSocket.on(DungeonEvent.Connect, () => {
             if (this.anonymousSocket) {
+                this.anonymousSocket.removeAllListeners();
                 this.anonymousSocket.disconnect();
+                this.anonymousSocketConnected = false;
             }
 
             this.authenticatedSocketConnected = true;
