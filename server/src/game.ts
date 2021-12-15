@@ -6,6 +6,7 @@ import { verify, sign } from 'jsonwebtoken';
 import { existsSync, writeFileSync, readFileSync } from 'fs';
 import { hashSync, compareSync } from 'bcryptjs';
 import { Constants } from './constants';
+import { DungeonBuilder } from './dungeon-builder';
 
 export class Game {
 
@@ -38,33 +39,12 @@ export class Game {
     }
 
     buildTiles() {
-        const rows = [
-            [0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
-            [0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
-            [0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
-            [0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
-            [0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
-            [0,1,0,0,1,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0],
-            [0,1,0,0,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0],
-            [0,1,0,0,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0],
-            [0,1,0,0,0,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0],
-            [0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
-            [0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
-            [0,1,0,0,0,1,1,0,0,0,0,1,0,0,0,0,0,0,0,0],
-            [0,1,0,0,0,0,1,1,0,0,0,1,0,0,0,0,0,0,0,0],
-            [0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0],
-            [0,1,1,1,1,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0],
-            [0,0,0,0,1,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
-        ];
-
+        const dungeonBuilder = new DungeonBuilder();
+        const dungeon = dungeonBuilder.getDungeon();
         const tiles = new Map<string, Tile>();
 
-        for(let y = 0; y < rows.length; ++y) {
-            const row = rows[y];
+        for(let y = 0; y < dungeon.length; ++y) {
+            const row = dungeon[y];
             for(let x = 0; x < row.length; ++x) {
                 const key = `${x},${y}`;
                 const type = row[x];
