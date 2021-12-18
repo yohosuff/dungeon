@@ -15,13 +15,14 @@ export class MessageBus {
         this.subjects.set(ClientEvent.ServerAddedPlayer, new Subject<any>());
         this.subjects.set(ClientEvent.ServerUpdatedPlayer, new Subject<any>());
         this.subjects.set(ClientEvent.ServerUpdatedMe, new Subject<any>());
+        this.subjects.set(ClientEvent.ClientUpdatedPlayer, new Subject<any>());
     }
     
-    public publish<T>(dungeonEvent: string, data: T) {
-        this.subjects.get(dungeonEvent)!.next(data);
+    public publish<T>(clientEvent: string, data?: T) {
+        this.subjects.get(clientEvent)!.next(data);
     }
 
-    public subscribe<T>(dungeonEvent: string, subscriber: (data: T) => void) {
-        return this.subjects.get(dungeonEvent)!.subscribe(subscriber);
+    public subscribe<T>(clientEvent: string, subscriber: (data: T) => void) {
+        return this.subjects.get(clientEvent)!.subscribe(subscriber);
     }
 }

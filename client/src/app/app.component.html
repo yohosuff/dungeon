@@ -1,11 +1,34 @@
 <div class="dungeon" *ngIf="communicationService.authenticatedSocketConnected">
   
   <div
-    *ngFor="let player of dungeon.otherPlayers"
+    *ngIf="playerManager.me.email"
     class="player"
-    [style.z-index]="player.position.y + Z_INDEX_OFFSET"
-    [style.left]="(player.position.x * 32 - 16) + 'px'"
-    [style.top]="(player.position.y * 32 - 40) + 'px'"
+    [style.z-index]="playerManager.me.localPosition.y + Z_INDEX_OFFSET"
+    [style.left]="(playerManager.me.localPosition.x * 32 - 16) + 'px'"
+    [style.top]="(playerManager.me.localPosition.y * 32 - 40) + 'px'"
+    
+  >
+    <img
+      [ngClass]="{
+        'face-left': playerManager.me.action === 'face-left',
+        'face-right': playerManager.me.action === 'face-right',
+        'face-up': playerManager.me.action === 'face-up',
+        'face-down': playerManager.me.action === 'face-down',
+        'walk-left': playerManager.me.action === 'walk-left',
+        'walk-right': playerManager.me.action === 'walk-right',
+        'walk-up': playerManager.me.action === 'walk-up',
+        'walk-down': playerManager.me.action === 'walk-down'
+      }"
+      src="assets/{{playerManager.me.avatar}}.png"
+    >
+  </div>
+
+  <div
+    *ngFor="let player of camera.visiblePlayers"
+    class="player"
+    [style.z-index]="player.localPosition.y + Z_INDEX_OFFSET"
+    [style.left]="(player.localPosition.x * 32 - 16) + 'px'"
+    [style.top]="(player.localPosition.y * 32 - 40) + 'px'"
     (transitionend)="onOtherPlayerTransitionEnd(player)"
   >
     <img
@@ -23,37 +46,25 @@
     >
   </div>
   
-  <div
-    *ngIf="dungeon.me.email"
-    class="player"
-    [style.z-index]="dungeon.me.position.y + Z_INDEX_OFFSET"
-    [style.left]="(dungeon.me.position.x * 32 - 16) + 'px'"
-    [style.top]="(dungeon.me.position.y * 32 - 40) + 'px'"
-    (transitionend)="onTransitionEnd()"
-  >
-    <img
-      [ngClass]="{
-        'face-left': dungeon.me.action === 'face-left',
-        'face-right': dungeon.me.action === 'face-right',
-        'face-up': dungeon.me.action === 'face-up',
-        'face-down': dungeon.me.action === 'face-down',
-        'walk-left': dungeon.me.action === 'walk-left',
-        'walk-right': dungeon.me.action === 'walk-right',
-        'walk-up': dungeon.me.action === 'walk-up',
-        'walk-down': dungeon.me.action === 'walk-down'
-      }"
-      src="assets/{{dungeon.me.avatar}}.png"
-    >
-  </div>
-
   <!-- tiles -->
 
   <div
-    *ngFor="let tile of dungeon.tilesArray"
+    *ngFor="let tile of camera.visibleTiles"
     class="tile"
-    [style.z-index]="tile.position.y - 3 + Z_INDEX_OFFSET"
-    [style.left]="(tile.position.x * 32) + 'px'"
-    [style.top]="(tile.position.y * 32) + 'px'"
+    [style.z-index]="tile.localPosition.y - 3 + Z_INDEX_OFFSET"
+    [style.left]="(tile.localPosition.x * 32) + 'px'"
+    [style.top]="(tile.localPosition.y * 32) + 'px'"
+  >
+    <img *ngIf="tile.type === 1" src="assets/rect_gray0.png">
+    <img *ngIf="tile.type === 0" src="assets/dngn_deep_water.png">
+  </div>
+
+  <div
+    *ngFor="let tile of camera.borderTiles"
+    class="tile"
+    [style.z-index]="999999"
+    [style.left]="(tile.localPosition.x * 32) + 'px'"
+    [style.top]="(tile.localPosition.y * 32) + 'px'"
   >
     <img *ngIf="tile.type === 1" src="assets/rect_gray0.png">
     <img *ngIf="tile.type === 0" src="assets/dngn_deep_water.png">
@@ -69,7 +80,7 @@
 
   <div *ngIf="communicationService.authenticatedSocketConnected" class="d-flex align-items-baseline">
     <button type="button" class="btn btn-primary" (click)="logout()"> Logout </button>
-    <div class="ms-2 text-info">{{dungeon.me.email}}</div>
+    <div class="ms-2 text-info">{{playerManager.me.email}}</div>
   </div>
 
   <div *ngIf="communicationService.anonymousSocketConnected">

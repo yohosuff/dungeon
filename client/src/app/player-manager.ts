@@ -1,29 +1,22 @@
 import { Injectable } from "@angular/core";
-import { HelloDto, PlayerDto, Tile } from "../../../shared";
+import { PlayerDto } from "../../../shared";
 import { ClientEvent } from "./client-event";
 import { MessageBus } from "./message-bus";
+import { TileManager } from "./tile-manager";
 
 @Injectable({
     providedIn: 'root'
 })
-export class Dungeon {
-
-    me: PlayerDto;
-    otherPlayers: PlayerDto[];
-    tilesArray!: Tile[];
-    tilesMap!: Map<string, Tile>;
-
+export class PlayerManager {
+    me!: PlayerDto;
+    otherPlayers!: PlayerDto[];
+    
     constructor(
         private messageBus: MessageBus,
+        private tileManager: TileManager
     ) {
         this.me = new PlayerDto();
         this.otherPlayers = [];
-
-        this.messageBus.subscribe(ClientEvent.ServerSaidHello, (helloDto: HelloDto) => {
-            this.loadPlayers(helloDto.players, helloDto.email);
-            this.tilesMap = new Map<string, Tile>(JSON.parse(helloDto.tiles));
-            this.tilesArray = Array.from(this.tilesMap.values());
-        });
 
         this.messageBus.subscribe(ClientEvent.ServerAddedPlayer, (playerDto: PlayerDto) => {
             this.addPlayer(playerDto);
@@ -52,7 +45,7 @@ export class Dungeon {
         //////////////////////////////////////////////
 
         const playerCollision = this.otherPlayers.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
-        const onTile = this.tilesMap.get(newPosition.toCoordinateString())?.type === 1;
+        const onTile = this.tileManager.isOnTile(newPosition);
 
         const blocked = playerCollision || !onTile;
 
@@ -74,31 +67,6 @@ export class Dungeon {
         return 'position-changed';
     }
 
-    updatePlayer(playerDto: PlayerDto) {
-        let player = this.otherPlayers.find(player => player.email === playerDto.email);
-
-        if (!player) {
-            console.warn('received playerDto for player not in otherPlayers list');
-            return;
-        }
-
-        const moving = !player.position.equals(playerDto.position);
-        
-        player.position = playerDto.position;
-        player.direction = playerDto.direction;
-        player.action = `${moving ? 'walk' : 'face'}-${playerDto.direction}`;
-    }
-
-    addPlayer(playerDto: PlayerDto) {
-        const existingPlayer = this.otherPlayers.find(player => player.email === playerDto.email);
-
-        if(existingPlayer) {
-            return;
-        }
-
-        this.otherPlayers.push(playerDto);
-    }
-
     loadPlayers(players: PlayerDto[], email: string) {
         this.otherPlayers = [];
 
@@ -115,5 +83,32 @@ export class Dungeon {
 
             this.otherPlayers.push(player);
         }
+    }
+
+    updatePlayer(playerDto: PlayerDto) {
+        let player = this.otherPlayers.find(player => player.email === playerDto.email);
+
+        if (!player) {
+            console.warn('received playerDto for player not in otherPlayers list');
+            return;
+        }
+
+        const moving = !player.position.equals(playerDto.position);
+        
+        player.position = playerDto.position;
+        player.direction = playerDto.direction;
+        player.action = `${moving ? 'walk' : 'face'}-${playerDto.direction}`;
+
+        this.messageBus.publish(ClientEvent.ClientUpdatedPlayer, player);
+    }
+
+    addPlayer(playerDto: PlayerDto) {
+        const existingPlayer = this.otherPlayers.find(player => player.email === playerDto.email);
+
+        if(existingPlayer) {
+            return;
+        }
+
+        this.otherPlayers.push(playerDto);
     }
 }

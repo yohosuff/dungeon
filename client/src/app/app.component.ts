@@ -2,10 +2,12 @@ import { Component, HostListener } from '@angular/core';
 import { HelloDto, PlayerDto } from '../../../shared';
 import { Constants } from './constants';
 import { CommunicationService } from './communication-service';
-import { Dungeon } from './dungeon';
 import { InputManager } from './input-manager';
 import { MessageBus } from './message-bus';
 import { ClientEvent } from './client-event';
+import { Camera } from './camera';
+import { PlayerManager } from './player-manager';
+import { TileManager } from './tile-manager';
 
 @Component({
   selector: 'app-root',
@@ -17,10 +19,12 @@ export class AppComponent {
   Z_INDEX_OFFSET = 10000;
 
   constructor(
-    public dungeon: Dungeon,
     public communicationService: CommunicationService,
     private inputManager: InputManager,
     private messageBus: MessageBus,
+    public camera: Camera,
+    public playerManager: PlayerManager,
+    private tileManager: TileManager
   ) {
     const token = localStorage.getItem(Constants.DungeonToken);
 
@@ -31,17 +35,30 @@ export class AppComponent {
     }
 
     this.messageBus.subscribe(ClientEvent.ServerSaidHello, (helloDto: HelloDto) => {
+      this.playerManager.loadPlayers(helloDto.players, helloDto.email);
+      this.tileManager.loadTiles(helloDto.tiles);
+      this.camera.moveToPosition(this.playerManager.me.position);
+      this.playerManager.me.updateLocalPosition(this.camera.position);
+      this.camera.refreshVisiblePlayers();
+      this.camera.refreshVisibleTiles();
       this.loop();
     });
   }
 
   loop() {
+    if (!this.communicationService.waitingForServer && !this.communicationService.transitioning) {
+      this.inputManager.handleInput();
+    }
+
     if (this.communicationService.waitingForServer) {
       console.log('discarding input as server is still processing');
-    } else if(this.communicationService.transitioning) {
-      console.log('discarding input as player is still transitioning');
     } else {
       this.inputManager.handleInput();
+    }
+
+    if (this.inputManager.nextMoveTime <= Date.now()) {
+      const me = this.playerManager.me;
+      me.action = `face-${me.direction}`;
     }
     
     window.requestAnimationFrame(this.loop.bind(this));
@@ -50,20 +67,6 @@ export class AppComponent {
   logout() {
     localStorage.removeItem(Constants.DungeonToken);
     this.communicationService.authenticatedSocket?.disconnect();
-  }
-
-  onTransitionEnd() {
-    this.communicationService.transitioning = false;
-    
-    if(this.dungeon.me.action === 'walk-left') {
-      this.dungeon.me.action = 'face-left';
-    } else if(this.dungeon.me.action === 'walk-right') {
-      this.dungeon.me.action = 'face-right';
-    } else if (this.dungeon.me.action === 'walk-up') {
-      this.dungeon.me.action = 'face-up';
-    } else if (this.dungeon.me.action === 'walk-down') {
-      this.dungeon.me.action = 'face-down';
-    }
   }
 
   onOtherPlayerTransitionEnd(player: PlayerDto) {
@@ -86,8 +89,8 @@ export class AppComponent {
     this.inputManager.input.set(event.code, false);
 
     if (event.code === 'KeyP') {
-      console.log('other players', this.dungeon.otherPlayers);
-      console.log('me', this.dungeon.me);
+      console.log('other players', this.playerManager.otherPlayers);
+      console.log('me', this.playerManager.me);
     }
 
     if (event.code === 'KeyM') {

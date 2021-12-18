@@ -2,6 +2,7 @@ import { Position } from ".";
 
 // rename this PlayerData
 export class PlayerDto {
+    localPosition: Position;
     position: Position;
     email?: string;
     action?: string;
@@ -10,6 +11,12 @@ export class PlayerDto {
 
     constructor(x: number = 0, y: number = 0) {
         this.position = new Position(x, y);
+        this.localPosition = new Position();
+    }
+
+    updateLocalPosition(referencePosition: Position) {
+        this.localPosition.x = this.position.x - referencePosition.x;
+        this.localPosition.y = this.position.y - referencePosition.y;
     }
 
     static reconstruct(data: PlayerDto): PlayerDto {

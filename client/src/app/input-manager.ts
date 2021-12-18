@@ -1,7 +1,8 @@
 import { Injectable } from "@angular/core";
 import { DungeonEvent } from "../../../shared";
+import { Camera } from "./camera";
 import { CommunicationService } from "./communication-service";
-import { Dungeon } from "./dungeon";
+import { PlayerManager } from "./player-manager";
 
 @Injectable({
     providedIn: 'root',
@@ -12,11 +13,14 @@ export class InputManager {
     keys: string[];
     map: Map<string, string>;
     autoMoveRight: boolean;
+    nextMoveTime: number;
     
     constructor(
-        private dungeon: Dungeon,
+        private playerManager: PlayerManager,
         private communicationService: CommunicationService,
+        private camera: Camera,
     ) {
+        this.nextMoveTime = 0;
         this.input = new Map<string, boolean>();
         this.autoMoveRight = false;
 
@@ -39,6 +43,11 @@ export class InputManager {
     }
 
     handleInput() {
+
+        if(Date.now() < this.nextMoveTime) {
+            return;
+        }
+
         let direction;
 
         for(let key of this.keys) {
@@ -54,13 +63,17 @@ export class InputManager {
             return;
         }
 
-        const result = this.dungeon.moveMe(direction);
+        this.playerManager.me.action === `walk-${direction}`;
+        
+        const result = this.playerManager.moveMe(direction);
 
         switch(result) {
             case 'position-changed':
-                this.communicationService.transitioning = true;
+                this.nextMoveTime = Date.now() + 200;
                 this.communicationService.waitingForServer = true;
                 this.communicationService.authenticatedSocket.emit(DungeonEvent.Move, direction);
+                this.camera.moveToPosition(this.playerManager.me.position);
+                this.playerManager.me.updateLocalPosition(this.camera.position);
                 break;
             case 'direction-changed':
                 this.communicationService.authenticatedSocket.emit(DungeonEvent.Move, direction);
