@@ -1,5 +1,5 @@
 import { Component, HostListener } from '@angular/core';
-import { HelloDto, PlayerDto } from '../../../shared';
+import { DungeonEvent, HelloDto, PlayerDto } from '../../../shared';
 import { Constants } from './constants';
 import { CommunicationService } from './communication-service';
 import { InputManager } from './input-manager';
@@ -59,6 +59,7 @@ export class AppComponent {
     if (this.inputManager.nextMoveTime <= Date.now()) {
       const me = this.playerManager.me;
       me.action = `face-${me.direction}`;
+      this.communicationService.authenticatedSocket.emit(DungeonEvent.ChangeDirection, me.direction);
     }
     
     window.requestAnimationFrame(this.loop.bind(this));
@@ -67,10 +68,6 @@ export class AppComponent {
   logout() {
     localStorage.removeItem(Constants.DungeonToken);
     this.communicationService.authenticatedSocket?.disconnect();
-  }
-
-  onOtherPlayerTransitionEnd(player: PlayerDto) {
-    player.action = this.getStopWalkingAction(player.action as string);
   }
 
   getStopWalkingAction(action: string) {

@@ -16,6 +16,7 @@ export class DungeonEvent {
     // game events
     public static readonly Hello = "Hello";
     public static readonly Move = "Move";
+    public static readonly ChangeDirection = "ChangeDirection";
     public static readonly UpdatePlayer = "UpdatePlayer";
     public static readonly PlayerLeft = "PlayerLeft";
     public static readonly PlayerJoined = "PlayerJoined";

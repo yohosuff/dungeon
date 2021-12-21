@@ -29,7 +29,6 @@
     [style.z-index]="player.localPosition.y + Z_INDEX_OFFSET"
     [style.left]="(player.localPosition.x * 32 - 16) + 'px'"
     [style.top]="(player.localPosition.y * 32 - 40) + 'px'"
-    (transitionend)="onOtherPlayerTransitionEnd(player)"
   >
     <img
       [ngClass]="{

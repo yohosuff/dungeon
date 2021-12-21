@@ -76,7 +76,7 @@ export class InputManager {
                 this.playerManager.me.updateLocalPosition(this.camera.position);
                 break;
             case 'direction-changed':
-                this.communicationService.authenticatedSocket.emit(DungeonEvent.Move, direction);
+                this.communicationService.authenticatedSocket.emit(DungeonEvent.ChangeDirection, direction);
                 break;
         }
     }

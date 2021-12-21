@@ -91,6 +91,12 @@ export class Player {
             this.emitUpdate();
         });
 
+        socket.on(DungeonEvent.ChangeDirection, async direction => {
+            this.direction = direction;
+            this.game.playerManager.savePlayer(this);
+            this.emitUpdate();
+        });
+
         socket.on(DungeonEvent.Disconnect, () => {
             socket.broadcast.emit(DungeonEvent.PlayerLeft, this.email);
         });
