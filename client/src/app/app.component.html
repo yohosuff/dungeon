@@ -1,5 +1,5 @@
 <div class="dungeon" *ngIf="communicationService.authenticatedSocketConnected">
-  
+
   <div
     *ngIf="playerManager.me.email"
     class="player"
@@ -59,17 +59,18 @@
     <img *ngIf="tile.type === 0" src="assets/dngn_deep_water.png">
   </div>
 
-  <div
-    *ngFor="let tile of camera.borderTiles"
-    class="tile"
-    [style.z-index]="999999"
-    [style.left]="(tile.localPosition.x * 32) + 'px'"
-    [style.top]="(tile.localPosition.y * 32) + 'px'"
-  >
-    <img *ngIf="tile.type === 1" src="assets/rect_gray0.png">
-    <img *ngIf="tile.type === 0" src="assets/dngn_deep_water.png">
-  </div>
+  <!-- borders -->
 
+  <div
+    *ngFor="let border of camera.borders"
+    class="dungeon-border"
+    [style.left]="(border.left * 32) + 'px'"
+    [style.top]="(border.top * 32) + 'px'"
+    [style.width]="(border.width * 32) + 'px'"
+    [style.height]="(border.height * 32) + 'px'"
+  >
+  </div>
+  
 </div>
 
 <div class="position-absolute bottom-0 mb-1 ms-1">

@@ -4,6 +4,7 @@ import { ClientEvent } from "./client-event";
 import { MessageBus } from "./message-bus";
 import { PlayerManager } from "./player-manager";
 import { TileManager } from "./tile-manager";
+import { Border } from "./border";
 
 @Injectable({
     providedIn: 'root'
@@ -13,7 +14,7 @@ export class Camera {
     radius!: number;
 
     visibleTiles!: Tile[];
-    borderTiles!: Tile[];
+    borders!: Border[];
     visiblePlayers!: PlayerDto[];
 
     left!: number;
@@ -26,17 +27,46 @@ export class Camera {
         private playerManager: PlayerManager,
         private messageBus: MessageBus,
     ) {
-        this.radius = 5;
+        this.radius = 10;
         this.position = new Position();
 
         this.refreshBounds();
         this.refreshVisiblePlayers();
         this.refreshVisibleTiles();
+        this.refreshBorders();
 
         this.messageBus.subscribe(ClientEvent.ClientUpdatedPlayer, (player: PlayerDto) => {
             player.updateLocalPosition(this.position);
             this.refreshVisiblePlayers();
         });
+    }
+
+    refreshBorders() {
+        const leftBorder = new Border();
+        leftBorder.left = this.left - 1;
+        leftBorder.top = this.top - 1;
+        leftBorder.width = 3;
+        leftBorder.height = (this.radius + 1) * 2 + 1;
+
+        const rightBorder = new Border();
+        rightBorder.left = this.right - 1;
+        rightBorder.top = this.top - 1;
+        rightBorder.width = 3;
+        rightBorder.height = (this.radius + 1) * 2 + 1;
+
+        const topBorder = new Border();
+        topBorder.left = this.left - 1;
+        topBorder.top = this.top - 1;
+        topBorder.width = (this.radius + 1) * 2 + 1;
+        topBorder.height = 3;
+
+        const bottomBorder = new Border();
+        bottomBorder.left = this.left - 1;
+        bottomBorder.top = this.bottom - 1;
+        bottomBorder.width = (this.radius + 1) * 2 + 1;
+        bottomBorder.height = 3;
+                
+        this.borders = [leftBorder, rightBorder, topBorder, bottomBorder];
     }
 
     refreshBounds() {
@@ -48,16 +78,9 @@ export class Camera {
 
     refreshVisibleTiles() {
         const visibleTiles = [];
-        const borderTiles = [];
-
+        
         for(let x = this.left; x <= this.right; ++x) {
             for(let y = this.top; y <= this.bottom; ++y) {
-                
-                if(x === this.left || x === this.right || y === this.top || y === this.bottom) {
-                    const borderTile = new Tile(x, y, 0);
-                    borderTile.updateLocalPosition(this.position);
-                    borderTiles.push(borderTile);
-                }
                 
                 const tile = this.tileManager.getTile(x, y);
 
@@ -72,7 +95,6 @@ export class Camera {
         }
 
         this.visibleTiles = visibleTiles;
-        this.borderTiles = borderTiles;
     }
 
     refreshVisiblePlayers() {

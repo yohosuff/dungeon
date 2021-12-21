@@ -7,8 +7,14 @@ $animationSpeed: 400ms;
 
 .dungeon {
     position: absolute;
-    left: 200px;
-    top: 200px;
+    left: 300px;
+    top: 300px;
+}
+
+.dungeon-border {
+    z-index: 999999;
+    position: absolute;
+    background-color: black;
 }
 
 .tile {
