@@ -1,28 +1,30 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Modal } from 'bootstrap';
 import { Socket } from 'socket.io-client';
 import { DungeonEvent } from '../../../../shared'; //use @shared or something here instead of going up all those levels
+import { CommunicationService } from '../communication-service';
+import { Constants } from '../constants';
+import { PlayerManager } from '../player-manager';
 
 @Component({
   selector: 'authentication-widget',
   templateUrl: './authentication-widget.component.html',
   styleUrls: ['./authentication-widget.component.scss']
 })
-export class AuthenticationWidgetComponent implements OnInit {
-
-  @Input() anonymousSocket!: Socket;
+export class AuthenticationWidgetComponent {
 
   form: FormGroup;
-
-  constructor(private _formBuilder: FormBuilder) {
+  
+  constructor(
+    private _formBuilder: FormBuilder,
+    public communicationService: CommunicationService,
+    public playerManager: PlayerManager,
+  ) {
     this.form = this._formBuilder.group({
       email: ['', Validators.email],
       password: ['', Validators.required],
     });
-  }
-
-  ngOnInit(): void {
   }
 
   showLoginModal() {
@@ -35,8 +37,13 @@ export class AuthenticationWidgetComponent implements OnInit {
   login() {
     const email = this.form.get('email')?.value;
     const password = this.form.get('password')?.value;
-    this.anonymousSocket.emit(DungeonEvent.Login, { email, password });
+    this.communicationService.anonymousSocket.emit(DungeonEvent.Login, { email, password });
     this.getModalInstance('loginModal').hide();
+  }
+
+  logout() {
+    localStorage.removeItem(Constants.DungeonToken);
+    this.communicationService.authenticatedSocket.disconnect();
   }
 
   showRegisterModal() {
@@ -49,7 +56,7 @@ export class AuthenticationWidgetComponent implements OnInit {
   register() {
     const email = this.form.get('email')?.value;
     const password = this.form.get('password')?.value;
-    this.anonymousSocket.emit(DungeonEvent.Register, { email, password });
+    this.communicationService.anonymousSocket.emit(DungeonEvent.Register, { email, password });
     this.getModalInstance('registerModal').hide();
   }
 
@@ -58,5 +65,4 @@ export class AuthenticationWidgetComponent implements OnInit {
     const modal = Modal.getInstance(modalElement) as Modal;
     return modal;
   }
-
 }

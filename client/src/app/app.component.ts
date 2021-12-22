@@ -1,5 +1,5 @@
 import { Component, HostListener } from '@angular/core';
-import { DungeonEvent, HelloDto, PlayerDto } from '../../../shared';
+import { DungeonEvent, HelloDto } from '../../../shared';
 import { Constants } from './constants';
 import { CommunicationService } from './communication-service';
 import { InputManager } from './input-manager';
@@ -63,11 +63,6 @@ export class AppComponent {
     }
     
     window.requestAnimationFrame(this.loop.bind(this));
-  }
-
-  logout() {
-    localStorage.removeItem(Constants.DungeonToken);
-    this.communicationService.authenticatedSocket?.disconnect();
   }
 
   getStopWalkingAction(action: string) {

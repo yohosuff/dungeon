@@ -72,18 +72,8 @@
   
 </div>
 
-<div class="position-absolute bottom-0 mb-1 ms-1">
-  
-  <div *ngIf="!communicationService.anonymousSocketConnected && !communicationService.authenticatedSocketConnected">
-    Connecting....
-  </div>
-
-  <div *ngIf="communicationService.authenticatedSocketConnected" class="d-flex align-items-baseline">
-    <button type="button" class="btn btn-primary" (click)="logout()"> Logout </button>
-    <div class="ms-2 text-info">{{playerManager.me.email}}</div>
-  </div>
-
-  <div *ngIf="communicationService.anonymousSocketConnected">
-    <authentication-widget [anonymousSocket]="communicationService.anonymousSocket"></authentication-widget>
-  </div>
+<div
+  class="position-absolute bottom-0 mb-1 ms-1"
+  [style.z-index]="9999999">
+  <authentication-widget></authentication-widget>
 </div>
