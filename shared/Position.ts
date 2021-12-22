@@ -22,4 +22,17 @@ export class Position {
     toCoordinateString() {
         return `${this.x},${this.y}`;
     }
+
+    move(direction: string) {
+        const newPosition = this.clone();
+
+        switch (direction) {
+            case 'right': newPosition.x += 1; break;
+            case 'left': newPosition.x -= 1; break;
+            case 'down': newPosition.y += 1; break;
+            case 'up': newPosition.y -= 1; break;
+        }
+
+        return newPosition;
+    }
 }

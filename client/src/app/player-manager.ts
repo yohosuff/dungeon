@@ -32,18 +32,7 @@ export class PlayerManager {
     }
 
     moveMe(direction: string): string {
-
-        // move this into a method on the Position object, have it return a new object the same way as this does
-        const newPosition = this.me.position.clone();
-
-        switch (direction) {
-            case 'right': newPosition.x += 1; break;
-            case 'left': newPosition.x -= 1; break;
-            case 'down': newPosition.y += 1; break;
-            case 'up': newPosition.y -= 1; break;
-        }
-        //////////////////////////////////////////////
-
+        const newPosition = this.me.position.move(direction);
         const playerCollision = this.otherPlayers.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
         const onTile = this.tileManager.isOnTile(newPosition);
 
