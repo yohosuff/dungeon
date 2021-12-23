@@ -27,7 +27,7 @@ export class Camera {
         private playerManager: PlayerManager,
         private messageBus: MessageBus,
     ) {
-        this.radius = 10;
+        this.radius = 9;
         this.position = new Position();
 
         this.refreshBounds();
