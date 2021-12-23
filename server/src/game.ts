@@ -62,9 +62,32 @@ export class Game {
         for(let email of this.playerManager.players.keys()) {
             const player = this.playerManager.getPlayer(email);
             player.game = this;
+            this.placePlayerOnRandomTile(player);
             this.players.push(player);
             console.log('loaded player', player.getDto());
         }
+    }
+
+
+    private placePlayerOnRandomTile(player: Player) {
+        const allPlayersCoordinates = this.players.reduce((set, player) => set.add(player.position.toCoordinateString()), new Set<string>());
+        const tilesArray = Array.from(this.tiles.values());
+        let tile: Tile;
+        
+        while(tilesArray.length > 0) {
+            let randomIndex = Math.floor(Math.random() * tilesArray.length);
+            tile = tilesArray[randomIndex];
+            const tileCoordinates = tile.worldPosition.toCoordinateString();
+            
+            if(tile.type === 1 && !allPlayersCoordinates.has(tileCoordinates)){
+                break;
+            }
+
+            tilesArray.splice(randomIndex, 1);
+        }
+
+        player.position.x = tile.worldPosition.x;
+        player.position.y = tile.worldPosition.y;
     }
 
     start() {
