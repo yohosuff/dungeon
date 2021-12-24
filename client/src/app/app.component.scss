@@ -35,6 +35,11 @@ $animationSpeed: 400ms;
     transition: left 200ms linear, top 200ms linear;
 }
 
+.black-tile {
+    z-index: 999999999;
+    position: relative;
+}
+
 .player {
     transition: left 200ms linear, top 200ms linear;
     width: $size;

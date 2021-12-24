@@ -6,7 +6,6 @@
     [style.z-index]="playerManager.me.localPosition.y + Z_INDEX_OFFSET"
     [style.left]="(playerManager.me.localPosition.x * 32 - 16) + 'px'"
     [style.top]="(playerManager.me.localPosition.y * 32 - 40) + 'px'"
-    
   >
     <img
       [ngClass]="{
@@ -50,12 +49,18 @@
   <div
     *ngFor="let tile of camera.visibleTiles"
     class="tile"
-    [style.z-index]="tile.localPosition.y - 3 + Z_INDEX_OFFSET"
     [style.left]="(tile.localPosition.x * 32) + 'px'"
     [style.top]="(tile.localPosition.y * 32) + 'px'"
   >
-    <img *ngIf="tile.type === 1" src="assets/rect_gray0.png">
-    <img *ngIf="tile.type === 0" src="assets/dngn_deep_water.png">
+    <div *ngIf="tile.inFOV" [style.z-index]="tile.localPosition.y - 3 + Z_INDEX_OFFSET">
+      <img *ngIf="tile.type === 1" src="assets/rect_gray0.png">
+      <img *ngIf="tile.type === 0" src="assets/dngn_deep_water.png">
+    </div>
+
+    <div *ngIf="!tile.inFOV" class="black-tile">
+      <img src="assets/black.png">
+    </div>
+    
   </div>
 
   <!-- borders -->

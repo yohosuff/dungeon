@@ -5,6 +5,7 @@ import { MessageBus } from "./message-bus";
 import { PlayerManager } from "./player-manager";
 import { TileManager } from "./tile-manager";
 import { Border } from "./border";
+import * as ROT from 'rot-js';
 
 @Injectable({
     providedIn: 'root'
@@ -21,7 +22,7 @@ export class Camera {
     right!: number;
     top!: number;
     bottom!: number;
-    
+
     constructor(
         private tileManager: TileManager,
         private playerManager: PlayerManager,
@@ -78,6 +79,7 @@ export class Camera {
 
     refreshVisibleTiles() {
         const visibleTiles = [];
+        const coordinatesInFOV = this.getCoordinatesInFOV();
         
         for(let x = this.left; x <= this.right; ++x) {
             for(let y = this.top; y <= this.bottom; ++y) {
@@ -89,6 +91,7 @@ export class Camera {
                 }
 
                 tile.updateLocalPosition(this.position);
+                tile.inFOV = coordinatesInFOV.has(`${x},${y}`);
 
                 visibleTiles.push(tile);
             }
@@ -97,13 +100,38 @@ export class Camera {
         this.visibleTiles = visibleTiles;
     }
 
+    getCoordinatesInFOV() {
+        const fov = new ROT.FOV.PreciseShadowcasting((x, y) => {
+            const tile = this.tileManager.getTile(x, y);
+
+            if(!tile) {
+                return false;
+            }
+
+            if(tile.type === 0) {
+                return false;
+            }
+
+            return true;
+        });
+
+        const coordinatesInFOV = new Set<string>();
+
+        fov.compute(this.position.x, this.position.y, 9, (x, y, r, visibility) => {
+            coordinatesInFOV.add(`${x},${y}`);
+        });
+
+        return coordinatesInFOV;
+    }
+
     refreshVisiblePlayers() {
         const visiblePlayers = [];
         
         for(let player of this.playerManager.otherPlayers) {
             player.updateLocalPosition(this.position);
+
             const visible = this.canSee(player.position);
-            
+
             if(visible) {
                 visiblePlayers.push(player);
             }
@@ -132,9 +160,9 @@ export class Camera {
         
         this.position.x = x;
         this.position.y = y;
-
+        
         this.refreshBounds();
-        this.refreshVisibleTiles();
         this.refreshVisiblePlayers();
+        this.refreshVisibleTiles();
     }
 }

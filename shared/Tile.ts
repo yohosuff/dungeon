@@ -8,10 +8,13 @@ export class Tile {
     // 1 - floor (walkable)
     type: number;
     
+    inFOV: boolean;
+    
     constructor(x: number = 0, y: number = 0, type: number = 0) {
         this.worldPosition = new Position(x, y);
         this.localPosition = new Position()
         this.type = type;
+        this.inFOV = false;
     }
 
     updateLocalPosition(referencePosition: Position) {
