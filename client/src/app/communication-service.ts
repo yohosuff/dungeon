@@ -41,7 +41,7 @@ export class CommunicationService {
             anonymousSocket.disconnect();
         }
 
-        anonymousSocket = io(`${Constants.BaseUrl}/anonymous`);
+        anonymousSocket = io(`${Constants.ServerUrl}/anonymous`);
 
         this.anonymousSocket = anonymousSocket;
         
@@ -87,7 +87,7 @@ export class CommunicationService {
             authenticatedSocket.disconnect();
         }
 
-        authenticatedSocket = io(`${Constants.BaseUrl}/authenticated`, { auth: { token } });
+        authenticatedSocket = io(`${Constants.ServerUrl}/authenticated`, { auth: { token } });
 
         this.authenticatedSocket = authenticatedSocket;
 

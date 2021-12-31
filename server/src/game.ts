@@ -7,6 +7,7 @@ import { existsSync, writeFileSync, readFileSync } from 'fs';
 import { hashSync, compareSync } from 'bcryptjs';
 import { Constants } from './constants';
 import { DungeonBuilder } from './dungeon-builder';
+import { createServer } from 'http';
 
 export class Game {
 
@@ -30,7 +31,7 @@ export class Game {
         this.io = new Server({
             serveClient: false,
             cors: {
-                origin: "http://localhost:4200",
+                origin: "http://68.149.100.88",
             },
         });
 
@@ -93,7 +94,9 @@ export class Game {
     start() {
         this.setupAnonymousListeners();
         this.setupAuthenticatedListeners();
-        this.io.listen(3000);
+        const server = createServer();
+        server.listen(3000, '0.0.0.0');
+        this.io.listen(server);
         console.log('server is up!');
     }
 

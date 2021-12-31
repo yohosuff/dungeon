@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { DungeonEvent, HelloDto } from '../../../shared';
 import { Constants } from './constants';
 import { CommunicationService } from './communication-service';
@@ -8,6 +8,7 @@ import { ClientEvent } from './client-event';
 import { Camera } from './camera';
 import { PlayerManager } from './player-manager';
 import { TileManager } from './tile-manager';
+import { Renderer } from './renderer';
 
 @Component({
   selector: 'app-root',
@@ -18,14 +19,18 @@ export class AppComponent {
 
   Z_INDEX_OFFSET = 10000;
 
+  @ViewChild('canvas') canvasElementRef!: ElementRef<HTMLCanvasElement>;
+
   constructor(
     public communicationService: CommunicationService,
     private inputManager: InputManager,
     private messageBus: MessageBus,
     public camera: Camera,
     public playerManager: PlayerManager,
-    private tileManager: TileManager
+    private tileManager: TileManager,
+    private renderer: Renderer,
   ) {
+
     const token = localStorage.getItem(Constants.DungeonToken);
 
     if(token) {
@@ -35,6 +40,7 @@ export class AppComponent {
     }
 
     this.messageBus.subscribe(ClientEvent.ServerSaidHello, (helloDto: HelloDto) => {
+      this.renderer.setCanvas(this.canvasElementRef.nativeElement);
       this.playerManager.loadPlayers(helloDto.players, helloDto.email);
       this.tileManager.loadTiles(helloDto.tiles);
       this.camera.moveToPosition(this.playerManager.me.position);
@@ -46,6 +52,7 @@ export class AppComponent {
   }
 
   loop() {
+    
     if (!this.communicationService.waitingForServer && !this.communicationService.transitioning) {
       this.inputManager.handleInput();
     }
@@ -61,6 +68,8 @@ export class AppComponent {
       me.action = `face-${me.direction}`;
       this.communicationService.authenticatedSocket.emit(DungeonEvent.ChangeDirection, me.direction);
     }
+
+    this.renderer.draw();
     
     window.requestAnimationFrame(this.loop.bind(this));
   }

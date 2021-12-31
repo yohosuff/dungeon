@@ -3,8 +3,8 @@ import * as ROT from 'rot-js';
 export class DungeonBuilder {
     getDungeon(): number[][] {
         
-        const rowCount = 200;
-        const colCount = 200;
+        const rowCount = 50;
+        const colCount = 50;
 
         const dungeon = [];
 
