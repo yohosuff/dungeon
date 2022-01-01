@@ -26,7 +26,7 @@ export class AppComponent {
     private inputManager: InputManager,
     private messageBus: MessageBus,
     public camera: Camera,
-    public playerManager: PlayerManager,
+    private playerManager: PlayerManager,
     private tileManager: TileManager,
     private renderer: Renderer,
   ) {
@@ -44,7 +44,6 @@ export class AppComponent {
       this.playerManager.loadPlayers(helloDto.players, helloDto.email);
       this.tileManager.loadTiles(helloDto.tiles);
       this.camera.moveToPosition(this.playerManager.me.position);
-      this.playerManager.me.updateLocalPosition(this.camera.position);
       this.camera.refreshVisiblePlayers();
       this.camera.refreshVisibleTiles();
       this.loop();

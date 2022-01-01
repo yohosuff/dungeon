@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Camera } from "./camera";
+import { PlayerManager } from "./player-manager";
 
 @Injectable({
     providedIn: 'root'
@@ -9,18 +10,23 @@ export class Renderer {
     canvas!: HTMLCanvasElement;
     context!: CanvasRenderingContext2D;
 
-    waterImage: HTMLImageElement;
-    stoneImage: HTMLImageElement;
-    bradImage: HTMLImageElement;
-    blackImage: HTMLImageElement;
+    images: Map<string, HTMLImageElement>;
+    tileSize: number;
+    spriteSize: number;
 
     constructor(
-        public camera: Camera,
+        private camera: Camera,
+        private playerManager: PlayerManager,
     ) {
-        this.waterImage = this.loadImage("/assets/dngn_deep_water.png");
-        this.stoneImage = this.loadImage("/assets/rect_gray0.png");
-        this.bradImage = this.loadImage("/assets/brad.png");
-        this.blackImage = this.loadImage("/assets/black.png");
+        this.images = new Map<string, HTMLImageElement>();
+        this.images.set('water', this.loadImage("/assets/dngn_deep_water.png"));
+        this.images.set('stone', this.loadImage("/assets/rect_gray0.png"));
+        this.images.set('black', this.loadImage("/assets/black.png"));
+        this.images.set('brad', this.loadImage("/assets/brad.png"));
+        this.images.set('jack', this.loadImage("/assets/jack.png"));
+
+        this.tileSize = 32;
+        this.spriteSize = 64;
     }
 
     private loadImage(src: string) {
@@ -37,27 +43,71 @@ export class Renderer {
     draw() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        //console.log(this.camera.visibleTiles);
-        
-        for(let tile of this.camera.visibleTiles) {
-            
-            const x = tile.localPosition.x + this.camera.radius;
-            const y = tile.localPosition.y + this.camera.radius;
+        for(let tile of this.camera.visibleTiles.filter(tile => tile.inFOV)) {
+            const dx = tile.position.x - this.camera.position.x + this.camera.radius;
+            const dy = tile.position.y - this.camera.position.y + this.camera.radius;
 
-            let image;
-
-            if(tile.inFOV) {
-                image = tile.type === 0 ? this.waterImage : this.stoneImage;
-            } else {
-                image = this.blackImage;
-            }
-
-            this.context.drawImage(
-                image,
-                x * 32,
-                y * 32);
+            this.drawTile(tile.type === 0 ? 'water' : 'stone', dx, dy);
         }
 
-        this.context.drawImage(this.bradImage, 0 * 64, 2 * 64, 64, 64, this.camera.radius * 32 - 16, this.camera.radius * 32 - 32, 64, 64);
+        this.playerManager.otherPlayers.sort((a, b) => a.position.y - b.position.y);
+
+        for(let player of this.playerManager.otherPlayers.filter(player => player.position.y < this.playerManager.me.position.y)) {
+
+            if(!this.camera.canSee(player.position)) {
+                continue;
+            }
+
+            const dx = player.position.x - this.camera.position.x + this.camera.radius;
+            const dy = player.position.y - this.camera.position.y + this.camera.radius;
+
+            this.drawSprite(player.avatar!, 0, 2, dx, dy);
+        }
+
+        this.drawSprite(
+            this.playerManager.me.avatar!, 0, 2,
+            this.playerManager.me.position.x - this.camera.position.x + this.camera.radius,
+            this.playerManager.me.position.y - this.camera.position.y + this.camera.radius,
+        );
+
+        for(let player of this.playerManager.otherPlayers.filter(player => player.position.y >= this.playerManager.me.position.y)) {
+
+            if(!this.camera.canSee(player.position)) {
+                continue;
+            }
+
+            const dx = player.position.x - this.camera.position.x + this.camera.radius;
+            const dy = player.position.y - this.camera.position.y + this.camera.radius;
+
+            this.drawSprite(player.avatar!, 0, 2, dx, dy);
+        }
+
+        for(let tile of this.camera.visibleTiles.filter(tile => !tile.inFOV)) {
+            const dx = tile.position.x - this.camera.position.x + this.camera.radius;
+            const dy = tile.position.y - this.camera.position.y + this.camera.radius;
+            this.drawTile('black', dx, dy);
+        }
+    }
+
+    drawTile(name: string, dx: number, dy: number) {
+        this.context.drawImage(
+            this.images.get(name)!,
+            dx * this.tileSize,
+            dy * this.tileSize,
+        );
+    }
+
+    drawSprite(name: string, sx: number, sy: number, dx: number, dy: number) {
+        this.context.drawImage(
+            this.images.get(name)!,
+            sx * this.spriteSize,
+            sy * this.spriteSize,
+            this.spriteSize,
+            this.spriteSize,
+            dx * this.tileSize - 16,
+            dy * this.tileSize - 32,
+            this.spriteSize,
+            this.spriteSize,
+        );
     }
 }

@@ -78,7 +78,7 @@ export class Game {
         while(tilesArray.length > 0) {
             let randomIndex = Math.floor(Math.random() * tilesArray.length);
             tile = tilesArray[randomIndex];
-            const tileCoordinates = tile.worldPosition.toCoordinateString();
+            const tileCoordinates = tile.position.toCoordinateString();
             
             if(tile.type === 1 && !allPlayersCoordinates.has(tileCoordinates)){
                 break;
@@ -87,8 +87,8 @@ export class Game {
             tilesArray.splice(randomIndex, 1);
         }
 
-        player.position.x = tile.worldPosition.x;
-        player.position.y = tile.worldPosition.y;
+        player.position.x = tile.position.x;
+        player.position.y = tile.position.y;
     }
 
     start() {

@@ -37,7 +37,6 @@ export class Camera {
         this.refreshBorders();
 
         this.messageBus.subscribe(ClientEvent.ClientUpdatedPlayer, (player: PlayerDto) => {
-            player.updateLocalPosition(this.position);
             this.refreshVisiblePlayers();
         });
     }
@@ -90,7 +89,6 @@ export class Camera {
                     continue;
                 }
 
-                tile.updateLocalPosition(this.position);
                 tile.inFOV = coordinatesInFOV.has(`${x},${y}`);
 
                 visibleTiles.push(tile);
@@ -128,8 +126,6 @@ export class Camera {
         const visiblePlayers = [];
         
         for(let player of this.playerManager.otherPlayers) {
-            player.updateLocalPosition(this.position);
-
             const visible = this.canSee(player.position);
 
             if(visible) {

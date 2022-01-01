@@ -14,11 +14,6 @@ export class PlayerDto {
         this.localPosition = new Position();
     }
 
-    updateLocalPosition(referencePosition: Position) {
-        this.localPosition.x = this.position.x - referencePosition.x;
-        this.localPosition.y = this.position.y - referencePosition.y;
-    }
-
     static reconstruct(data: PlayerDto): PlayerDto {
         const dto = new PlayerDto();
         dto.position = Position.reconstruct(data.position);
