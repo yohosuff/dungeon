@@ -3,8 +3,8 @@ import * as ROT from 'rot-js';
 export class DungeonBuilder {
     getDungeon(): number[][] {
         
-        const rowCount = 50;
-        const colCount = 50;
+        const rowCount = 30;
+        const colCount = 30;
 
         const dungeon = [];
 
@@ -25,6 +25,7 @@ export class DungeonBuilder {
         const map = new ROT.Map.Digger(colCount, rowCount, {});
         map.create((x, y, type) => {
             dungeon[y][x] = typeMap.get(type);
+            // dungeon[y][x] = 1;
         });
 
         return dungeon;

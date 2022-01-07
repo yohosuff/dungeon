@@ -16,7 +16,6 @@ export class CommunicationService {
     authenticatedSocket!: Socket;
     authenticatedSocketConnected: boolean;
 
-    transitioning: boolean; // does this really belong in the communication service?
     waitingForServer: boolean;
 
     constructor(
@@ -24,10 +23,10 @@ export class CommunicationService {
     ) {
         this.anonymousSocketConnected = false;
         this.authenticatedSocketConnected = false;
-        this.transitioning = false;
         this.waitingForServer = false;
 
         this.messageBus.subscribe(ClientEvent.ServerUpdatedMe, (playerDto: PlayerDto) => {
+            // console.log('server updated me')
             this.waitingForServer = false;
         });
     }
@@ -121,6 +120,7 @@ export class CommunicationService {
         });
 
         authenticatedSocket.on(DungeonEvent.UpdatePlayer, (playerDto: PlayerDto) => {
+            // console.log('update player');
             playerDto = PlayerDto.reconstruct(playerDto);
             this.messageBus.publish(ClientEvent.ServerUpdatedPlayer, playerDto);
         });

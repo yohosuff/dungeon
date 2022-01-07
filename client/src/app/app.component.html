@@ -1,5 +1,5 @@
 <div class="dungeon" *ngIf="communicationService.authenticatedSocketConnected">
-  <canvas #canvas width="{{camera.radius * 2 * 32}}" height="{{camera.radius * 2 * 32}}"></canvas>
+  <canvas #canvas width="{{(camera.radius * 2 + 1) * 32}}" height="{{(camera.radius * 2 + 1) * 32}}"></canvas>
 </div>
 
 <div

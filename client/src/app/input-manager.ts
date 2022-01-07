@@ -44,7 +44,7 @@ export class InputManager {
 
     handleInput() {
 
-        if(Date.now() < this.nextMoveTime) {
+        if(performance.now() < this.nextMoveTime || this.playerManager.me.animating) {
             return;
         }
 
@@ -64,15 +64,16 @@ export class InputManager {
         }
 
         this.playerManager.me.action === `walk-${direction}`;
-        
+
         const result = this.playerManager.moveMe(direction);
 
         switch(result) {
             case 'position-changed':
-                this.nextMoveTime = Date.now() + 200;
+                // should we use an 'animating' state? ie. cannot accept new input while 'animating' is true...
+                this.nextMoveTime = performance.now() + 200;
                 this.communicationService.waitingForServer = true;
                 this.communicationService.authenticatedSocket.emit(DungeonEvent.Move, direction);
-                this.camera.moveToPosition(this.playerManager.me.position);
+                // this.camera.moveToPosition(this.playerManager.me.position);
                 break;
             case 'direction-changed':
                 this.communicationService.authenticatedSocket.emit(DungeonEvent.ChangeDirection, direction);

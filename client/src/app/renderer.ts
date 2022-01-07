@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+import { Position } from "../../../shared";
 import { Camera } from "./camera";
 import { PlayerManager } from "./player-manager";
 
@@ -9,6 +10,9 @@ export class Renderer {
     
     canvas!: HTMLCanvasElement;
     context!: CanvasRenderingContext2D;
+
+    offScreenCanvas!: HTMLCanvasElement;
+    offScreenContext!: CanvasRenderingContext2D;
 
     images: Map<string, HTMLImageElement>;
     tileSize: number;
@@ -24,9 +28,8 @@ export class Renderer {
         this.images.set('black', this.loadImage("/assets/black.png"));
         this.images.set('brad', this.loadImage("/assets/brad.png"));
         this.images.set('jack', this.loadImage("/assets/jack.png"));
-
         this.tileSize = 32;
-        this.spriteSize = 64;
+        this.spriteSize = 64;        
     }
 
     private loadImage(src: string) {
@@ -36,18 +39,61 @@ export class Renderer {
     }
 
     setCanvas(canvas: HTMLCanvasElement) {
+        // TODO: rename these primary and secondary canvas
         this.canvas = canvas;
         this.context = canvas.getContext('2d')!;
+        this.offScreenCanvas = document.createElement('canvas');
+        this.offScreenCanvas.width = canvas.width;
+        this.offScreenCanvas.height = canvas.height;
+        this.offScreenContext = this.offScreenCanvas.getContext('2d')!;
     }
 
     draw() {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        const targetContext = this.offScreenContext;
+        const targetCanvas = this.offScreenCanvas;
+
+        targetContext.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+
+        const me = this.playerManager.me;
+        
+        if(me.action!.startsWith('walk-') || me.animating) {
+            
+            me.animating = true;
+
+            //https://stackoverflow.com/questions/43626268/html-canvas-move-circle-from-a-to-b-with-animation
+            const animationDuration = 200;
+            const percentComplete = Math.min(performance.now() - me.actionStartTime, animationDuration) / animationDuration;
+
+            if(percentComplete >= 1) {
+                console.log('animation complete!!!')
+                me.animating = false;
+                this.camera.moveToPosition(me.position);
+            }
+
+            const unitVector = new Position(
+                me.position.x - me.lastPosition.x,
+                me.position.y - me.lastPosition.y,
+            );
+
+            // magnitude of vectors will always be 1 for players moving 1 square at a time!!
+            // players will only every move in one dimension at a time, but this is just simpler
+
+            unitVector.x *= percentComplete;
+            unitVector.y *= percentComplete;
+
+            me.animatedPosition = new Position(
+                me.lastPosition.x + unitVector.x,
+                me.lastPosition.y + unitVector.y,
+            );
+
+            this.camera.moveToPosition(me.animatedPosition, false);
+        }
 
         for(let tile of this.camera.visibleTiles.filter(tile => tile.inFOV)) {
             const dx = tile.position.x - this.camera.position.x + this.camera.radius;
             const dy = tile.position.y - this.camera.position.y + this.camera.radius;
 
-            this.drawTile(tile.type === 0 ? 'water' : 'stone', dx, dy);
+            this.drawTile(targetContext, tile.type === 0 ? 'water' : 'stone', dx, dy);
         }
 
         this.playerManager.otherPlayers.sort((a, b) => a.position.y - b.position.y);
@@ -61,14 +107,24 @@ export class Renderer {
             const dx = player.position.x - this.camera.position.x + this.camera.radius;
             const dy = player.position.y - this.camera.position.y + this.camera.radius;
 
-            this.drawSprite(player.avatar!, 0, 2, dx, dy);
+            this.drawSprite(targetContext, player.avatar!, 0, 2, dx, dy);
         }
 
-        this.drawSprite(
-            this.playerManager.me.avatar!, 0, 2,
-            this.playerManager.me.position.x - this.camera.position.x + this.camera.radius,
-            this.playerManager.me.position.y - this.camera.position.y + this.camera.radius,
-        );
+        if(me.action!.startsWith('walk-')) {
+            this.drawSprite(
+                targetContext,
+                me.avatar!, 0, 2,
+                me.animatedPosition!.x - this.camera.position.x + this.camera.radius,
+                me.animatedPosition!.y - this.camera.position.y + this.camera.radius,
+            );
+        } else {
+            this.drawSprite(
+                targetContext, 
+                me.avatar!, 0, 2,
+                me.position.x - this.camera.position.x + this.camera.radius,
+                me.position.y - this.camera.position.y + this.camera.radius,
+            );
+        }
 
         for(let player of this.playerManager.otherPlayers.filter(player => player.position.y >= this.playerManager.me.position.y)) {
 
@@ -79,26 +135,29 @@ export class Renderer {
             const dx = player.position.x - this.camera.position.x + this.camera.radius;
             const dy = player.position.y - this.camera.position.y + this.camera.radius;
 
-            this.drawSprite(player.avatar!, 0, 2, dx, dy);
+            this.drawSprite(targetContext, player.avatar!, 0, 2, dx, dy);
         }
 
         for(let tile of this.camera.visibleTiles.filter(tile => !tile.inFOV)) {
             const dx = tile.position.x - this.camera.position.x + this.camera.radius;
             const dy = tile.position.y - this.camera.position.y + this.camera.radius;
-            this.drawTile('black', dx, dy);
+            this.drawTile(targetContext, 'black', dx, dy);
         }
+
+        this.context.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+        this.context.drawImage(targetCanvas, 0, 0);
     }
 
-    drawTile(name: string, dx: number, dy: number) {
-        this.context.drawImage(
+    drawTile(context: CanvasRenderingContext2D, name: string, dx: number, dy: number) {
+        context.drawImage(
             this.images.get(name)!,
             dx * this.tileSize,
             dy * this.tileSize,
         );
     }
 
-    drawSprite(name: string, sx: number, sy: number, dx: number, dy: number) {
-        this.context.drawImage(
+    drawSprite(context: CanvasRenderingContext2D, name: string, sx: number, sy: number, dx: number, dy: number) {
+        context.drawImage(
             this.images.get(name)!,
             sx * this.spriteSize,
             sy * this.spriteSize,

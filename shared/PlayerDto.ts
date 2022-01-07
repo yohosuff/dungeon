@@ -2,16 +2,19 @@ import { Position } from ".";
 
 // rename this PlayerData
 export class PlayerDto {
-    localPosition: Position;
-    position: Position;
+    lastPosition!: Position;
+    position!: Position;
+    animatedPosition!: Position;
+    
     email?: string;
     action?: string;
     direction?: string;
     avatar?: string;
+    actionStartTime!: number;
+    animating!: boolean;
 
     constructor(x: number = 0, y: number = 0) {
         this.position = new Position(x, y);
-        this.localPosition = new Position();
     }
 
     static reconstruct(data: PlayerDto): PlayerDto {

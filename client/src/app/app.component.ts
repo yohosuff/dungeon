@@ -46,24 +46,19 @@ export class AppComponent {
       this.camera.moveToPosition(this.playerManager.me.position);
       this.camera.refreshVisiblePlayers();
       this.camera.refreshVisibleTiles();
-      this.loop();
+      
+      window.requestAnimationFrame(this.loop.bind(this));
     });
   }
 
   loop() {
-    
-    if (!this.communicationService.waitingForServer && !this.communicationService.transitioning) {
+    const me = this.playerManager.me;
+
+    if (!this.communicationService.waitingForServer) {
       this.inputManager.handleInput();
     }
 
-    if (this.communicationService.waitingForServer) {
-      console.log('discarding input as server is still processing');
-    } else {
-      this.inputManager.handleInput();
-    }
-
-    if (this.inputManager.nextMoveTime <= Date.now()) {
-      const me = this.playerManager.me;
+    if (this.inputManager.nextMoveTime <= performance.now() && me.action?.startsWith('walk-')) {
       me.action = `face-${me.direction}`;
       this.communicationService.authenticatedSocket.emit(DungeonEvent.ChangeDirection, me.direction);
     }

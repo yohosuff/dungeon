@@ -143,22 +143,14 @@ export class Camera {
             && position.y <= this.bottom;
     }
 
-    moveToPosition(position: Position) {
-        this.moveToCoordinates(position.x, position.y);
-    }
-
-    moveToCoordinates(x: number, y: number) {
-        // const innerRadius = this.radius - 1;
+    moveToPosition(position: Position, refresh: boolean = true) {
+        this.position.x = position.x;
+        this.position.y = position.y;
         
-        // if(x - innerRadius >= 0 && x + innerRadius <= 14) {
-        //     this.position.x = x;
-        // }
-        
-        this.position.x = x;
-        this.position.y = y;
-        
-        this.refreshBounds();
-        this.refreshVisiblePlayers();
-        this.refreshVisibleTiles();
+        if(refresh) {
+            this.refreshBounds();
+            this.refreshVisiblePlayers();
+            this.refreshVisibleTiles();
+        }
     }
 }

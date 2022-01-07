@@ -50,7 +50,9 @@ export class PlayerManager {
         }
 
         this.me.action = `walk-${direction}`;
+        this.me.lastPosition = this.me.position;
         this.me.position = newPosition;
+        this.me.actionStartTime = performance.now();
         this.me.direction = direction;
         
         return 'position-changed';

@@ -2,7 +2,6 @@ import { Position } from ".";
 
 export class Tile {
     position: Position;
-    localPosition: Position;
     
     // 0 - empty (boundary; unwalkable)
     // 1 - floor (walkable)
@@ -12,7 +11,6 @@ export class Tile {
     
     constructor(x: number = 0, y: number = 0, type: number = 0) {
         this.position = new Position(x, y);
-        this.localPosition = new Position()
         this.type = type;
         this.inFOV = false;
     }
