@@ -56,43 +56,19 @@ export class Renderer {
 
         const me = this.playerManager.me;
         
-        if(me.action!.startsWith('walk-') || me.animating) {
-            
-            me.animating = true;
+        if(me.animating) {
+            me.animatedPosition = me.getAnimatedPosition();
 
-            //https://stackoverflow.com/questions/43626268/html-canvas-move-circle-from-a-to-b-with-animation
-            const animationDuration = 200;
-            const percentComplete = Math.min(performance.now() - me.actionStartTime, animationDuration) / animationDuration;
-
-            if(percentComplete >= 1) {
-                console.log('animation complete!!!')
-                me.animating = false;
+            if(me.animating) {
+                this.camera.moveToPosition(me.animatedPosition, false);
+            } else {
                 this.camera.moveToPosition(me.position);
             }
-
-            const unitVector = new Position(
-                me.position.x - me.lastPosition.x,
-                me.position.y - me.lastPosition.y,
-            );
-
-            // magnitude of vectors will always be 1 for players moving 1 square at a time!!
-            // players will only every move in one dimension at a time, but this is just simpler
-
-            unitVector.x *= percentComplete;
-            unitVector.y *= percentComplete;
-
-            me.animatedPosition = new Position(
-                me.lastPosition.x + unitVector.x,
-                me.lastPosition.y + unitVector.y,
-            );
-
-            this.camera.moveToPosition(me.animatedPosition, false);
         }
 
         for(let tile of this.camera.visibleTiles.filter(tile => tile.inFOV)) {
             const dx = tile.position.x - this.camera.position.x + this.camera.radius;
             const dy = tile.position.y - this.camera.position.y + this.camera.radius;
-
             this.drawTile(targetContext, tile.type === 0 ? 'water' : 'stone', dx, dy);
         }
 
@@ -104,13 +80,25 @@ export class Renderer {
                 continue;
             }
 
-            const dx = player.position.x - this.camera.position.x + this.camera.radius;
-            const dy = player.position.y - this.camera.position.y + this.camera.radius;
+            if(player.animating) {
 
-            this.drawSprite(targetContext, player.avatar!, 0, 2, dx, dy);
+                player.animatedPosition = player.getAnimatedPosition();
+
+                this.drawSprite(
+                    targetContext,
+                    player.avatar!, 0, 2,
+                    player.animatedPosition.x - this.camera.position.x + this.camera.radius,
+                    player.animatedPosition.y - this.camera.position.y + this.camera.radius);
+            } else {
+                this.drawSprite(
+                    targetContext,
+                    player.avatar!, 0, 2,
+                    player.position.x - this.camera.position.x + this.camera.radius,
+                    player.position.y - this.camera.position.y + this.camera.radius);
+            }
         }
 
-        if(me.action!.startsWith('walk-')) {
+        if(me.animating) {
             this.drawSprite(
                 targetContext,
                 me.avatar!, 0, 2,
@@ -132,10 +120,22 @@ export class Renderer {
                 continue;
             }
 
-            const dx = player.position.x - this.camera.position.x + this.camera.radius;
-            const dy = player.position.y - this.camera.position.y + this.camera.radius;
+            if(player.animating) {
 
-            this.drawSprite(targetContext, player.avatar!, 0, 2, dx, dy);
+                player.animatedPosition = player.getAnimatedPosition();
+
+                this.drawSprite(
+                    targetContext,
+                    player.avatar!, 0, 2,
+                    player.animatedPosition.x - this.camera.position.x + this.camera.radius,
+                    player.animatedPosition.y - this.camera.position.y + this.camera.radius);
+            } else {
+                this.drawSprite(
+                    targetContext,
+                    player.avatar!, 0, 2,
+                    player.position.x - this.camera.position.x + this.camera.radius,
+                    player.position.y - this.camera.position.y + this.camera.radius);
+            }
         }
 
         for(let tile of this.camera.visibleTiles.filter(tile => !tile.inFOV)) {

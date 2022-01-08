@@ -53,9 +53,40 @@ export class PlayerManager {
         this.me.lastPosition = this.me.position;
         this.me.position = newPosition;
         this.me.actionStartTime = performance.now();
+        this.me.animating = true;
         this.me.direction = direction;
         
         return 'position-changed';
+    }
+
+    updatePlayer(playerDto: PlayerDto) {
+        let player = this.otherPlayers.find(player => player.email === playerDto.email);
+
+        if (!player) {
+            console.warn('received playerDto for player not in otherPlayers list');
+            return;
+        }
+
+        const moving = !player.position.equals(playerDto.position);
+        
+        player.lastPosition = player.position;
+        player.position = playerDto.position;
+        player.direction = playerDto.direction;
+        player.action = `${moving ? 'walk' : 'face'}-${playerDto.direction}`;
+        player.actionStartTime = performance.now();
+        player.animating = true;
+
+        this.messageBus.publish(ClientEvent.ClientUpdatedPlayer, player);
+    }
+
+    addPlayer(playerDto: PlayerDto) {
+        const existingPlayer = this.otherPlayers.find(player => player.email === playerDto.email);
+
+        if(existingPlayer) {
+            return;
+        }
+
+        this.otherPlayers.push(playerDto);
     }
 
     loadPlayers(players: PlayerDto[], email: string) {
@@ -74,32 +105,5 @@ export class PlayerManager {
 
             this.otherPlayers.push(player);
         }
-    }
-
-    updatePlayer(playerDto: PlayerDto) {
-        let player = this.otherPlayers.find(player => player.email === playerDto.email);
-
-        if (!player) {
-            console.warn('received playerDto for player not in otherPlayers list');
-            return;
-        }
-
-        const moving = !player.position.equals(playerDto.position);
-        
-        player.position = playerDto.position;
-        player.direction = playerDto.direction;
-        player.action = `${moving ? 'walk' : 'face'}-${playerDto.direction}`;
-
-        this.messageBus.publish(ClientEvent.ClientUpdatedPlayer, player);
-    }
-
-    addPlayer(playerDto: PlayerDto) {
-        const existingPlayer = this.otherPlayers.find(player => player.email === playerDto.email);
-
-        if(existingPlayer) {
-            return;
-        }
-
-        this.otherPlayers.push(playerDto);
     }
 }
