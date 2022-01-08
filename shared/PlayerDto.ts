@@ -6,17 +6,30 @@ export class PlayerDto {
     position!: Position;
     animatedPosition!: Position;
     
-    email?: string;
-    action?: string;
-    direction?: string;
-    avatar?: string;
+    email!: string;
+    action!: string;
+    direction!: string;
+    avatar!: string;
     actionStartTime!: number;
     animating!: boolean;
 
     animationDuration = 200;
 
+    directionIndexMap: Map<string,number>;
+
     constructor(x: number = 0, y: number = 0) {
         this.position = new Position(x, y);
+
+        const directionIndexMap = new Map<string,number>();
+        directionIndexMap.set('down', 2);
+        directionIndexMap.set('right', 3);
+        directionIndexMap.set('up', 4);
+        directionIndexMap.set('left', 5);
+        this.directionIndexMap = directionIndexMap;
+    }
+
+    getDirectionIndex() {
+        return this.directionIndexMap.get(this.direction);
     }
 
     // https://stackoverflow.com/questions/43626268/html-canvas-move-circle-from-a-to-b-with-animation

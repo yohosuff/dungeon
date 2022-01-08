@@ -28,7 +28,7 @@ export class Renderer {
         this.images.set('brad', this.loadImage("/assets/brad.png"));
         this.images.set('jack', this.loadImage("/assets/jack.png"));
         this.tileSize = 32;
-        this.spriteSize = 64;        
+        this.spriteSize = 64;
     }
 
     private loadImage(src: string) {
@@ -84,7 +84,9 @@ export class Renderer {
 
             this.drawSprite(
                 targetContext,
-                player.avatar!, 0, 2,
+                player.avatar!,
+                0,
+                player.getDirectionIndex() ?? 2,
                 position.x - this.camera.position.x + this.camera.radius,
                 position.y - this.camera.position.y + this.camera.radius);
         }
@@ -93,7 +95,9 @@ export class Renderer {
 
         this.drawSprite(
             targetContext,
-            me.avatar!, 0, 2,
+            me.avatar!,
+            0,
+            me.getDirectionIndex() ?? 2,
             myPosition.x - this.camera.position.x + this.camera.radius,
             myPosition.y - this.camera.position.y + this.camera.radius,
         );
@@ -110,7 +114,9 @@ export class Renderer {
 
             this.drawSprite(
                 targetContext,
-                player.avatar!, 0, 2,
+                player.avatar!,
+                0,
+                player.getDirectionIndex() ?? 2,
                 position.x - this.camera.position.x + this.camera.radius,
                 position.y - this.camera.position.y + this.camera.radius);
         }
