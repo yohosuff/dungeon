@@ -1,5 +1,4 @@
 import { Injectable } from "@angular/core";
-import { Position } from "../../../shared";
 import { Camera } from "./camera";
 import { PlayerManager } from "./player-manager";
 
@@ -55,23 +54,22 @@ export class Renderer {
         targetContext.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
 
         const me = this.playerManager.me;
+
+        me.updateAnimatedPosition();
         
         if(me.animating) {
-            me.animatedPosition = me.getAnimatedPosition();
-
-            if(me.animating) {
-                this.camera.moveToPosition(me.animatedPosition, false);
-            } else {
-                this.camera.moveToPosition(me.position);
-            }
+            this.camera.moveToPosition(me.animatedPosition, false);
+        } else {
+            this.camera.moveToPosition(me.position);
         }
-
+        
         for(let tile of this.camera.visibleTiles.filter(tile => tile.inFOV)) {
             const dx = tile.position.x - this.camera.position.x + this.camera.radius;
             const dy = tile.position.y - this.camera.position.y + this.camera.radius;
             this.drawTile(targetContext, tile.type === 0 ? 'water' : 'stone', dx, dy);
         }
 
+        // this may be necessary to properly display a column of other players
         this.playerManager.otherPlayers.sort((a, b) => a.position.y - b.position.y);
 
         for(let player of this.playerManager.otherPlayers.filter(player => player.position.y < this.playerManager.me.position.y)) {
@@ -80,39 +78,25 @@ export class Renderer {
                 continue;
             }
 
-            if(player.animating) {
+            player.updateAnimatedPosition();
 
-                player.animatedPosition = player.getAnimatedPosition();
+            const position = player.animating ? player.animatedPosition : player.position;
 
-                this.drawSprite(
-                    targetContext,
-                    player.avatar!, 0, 2,
-                    player.animatedPosition.x - this.camera.position.x + this.camera.radius,
-                    player.animatedPosition.y - this.camera.position.y + this.camera.radius);
-            } else {
-                this.drawSprite(
-                    targetContext,
-                    player.avatar!, 0, 2,
-                    player.position.x - this.camera.position.x + this.camera.radius,
-                    player.position.y - this.camera.position.y + this.camera.radius);
-            }
-        }
-
-        if(me.animating) {
             this.drawSprite(
                 targetContext,
-                me.avatar!, 0, 2,
-                me.animatedPosition!.x - this.camera.position.x + this.camera.radius,
-                me.animatedPosition!.y - this.camera.position.y + this.camera.radius,
-            );
-        } else {
-            this.drawSprite(
-                targetContext, 
-                me.avatar!, 0, 2,
-                me.position.x - this.camera.position.x + this.camera.radius,
-                me.position.y - this.camera.position.y + this.camera.radius,
-            );
+                player.avatar!, 0, 2,
+                position.x - this.camera.position.x + this.camera.radius,
+                position.y - this.camera.position.y + this.camera.radius);
         }
+
+        const myPosition = me.animating ? me.animatedPosition : me.position;
+
+        this.drawSprite(
+            targetContext,
+            me.avatar!, 0, 2,
+            myPosition.x - this.camera.position.x + this.camera.radius,
+            myPosition.y - this.camera.position.y + this.camera.radius,
+        );
 
         for(let player of this.playerManager.otherPlayers.filter(player => player.position.y >= this.playerManager.me.position.y)) {
 
@@ -120,22 +104,15 @@ export class Renderer {
                 continue;
             }
 
-            if(player.animating) {
+            player.updateAnimatedPosition();
 
-                player.animatedPosition = player.getAnimatedPosition();
+            const position = player.animating ? player.animatedPosition : player.position;
 
-                this.drawSprite(
-                    targetContext,
-                    player.avatar!, 0, 2,
-                    player.animatedPosition.x - this.camera.position.x + this.camera.radius,
-                    player.animatedPosition.y - this.camera.position.y + this.camera.radius);
-            } else {
-                this.drawSprite(
-                    targetContext,
-                    player.avatar!, 0, 2,
-                    player.position.x - this.camera.position.x + this.camera.radius,
-                    player.position.y - this.camera.position.y + this.camera.radius);
-            }
+            this.drawSprite(
+                targetContext,
+                player.avatar!, 0, 2,
+                position.x - this.camera.position.x + this.camera.radius,
+                position.y - this.camera.position.y + this.camera.radius);
         }
 
         for(let tile of this.camera.visibleTiles.filter(tile => !tile.inFOV)) {
