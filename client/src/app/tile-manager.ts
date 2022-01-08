@@ -35,7 +35,6 @@ export class TileManager {
     getTile(x: number, y: number) {
         const position = new Position(x, y);
         const coordinateString = position.toCoordinateString();
-        const tile = this.tilesMap.get(coordinateString);
-        return tile;
+        return this.tilesMap.get(coordinateString);
     }
 }

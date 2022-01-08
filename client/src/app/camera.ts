@@ -4,7 +4,6 @@ import { ClientEvent } from "./client-event";
 import { MessageBus } from "./message-bus";
 import { PlayerManager } from "./player-manager";
 import { TileManager } from "./tile-manager";
-import { Border } from "./border";
 import * as ROT from 'rot-js';
 
 @Injectable({
@@ -15,7 +14,6 @@ export class Camera {
     radius!: number;
 
     visibleTiles!: Tile[];
-    borders!: Border[];
     visiblePlayers!: PlayerDto[];
 
     left!: number;
@@ -28,52 +26,24 @@ export class Camera {
         private playerManager: PlayerManager,
         private messageBus: MessageBus,
     ) {
-        this.radius = 9;
+        this.radius = 8;
         this.position = new Position();
 
         this.refreshBounds();
         this.refreshVisiblePlayers();
         this.refreshVisibleTiles();
-        this.refreshBorders();
 
         this.messageBus.subscribe(ClientEvent.ClientUpdatedPlayer, (player: PlayerDto) => {
             this.refreshVisiblePlayers();
         });
     }
 
-    refreshBorders() {
-        const leftBorder = new Border();
-        leftBorder.left = this.left - 1;
-        leftBorder.top = this.top - 1;
-        leftBorder.width = 3;
-        leftBorder.height = (this.radius + 1) * 2 + 1;
-
-        const rightBorder = new Border();
-        rightBorder.left = this.right - 1;
-        rightBorder.top = this.top - 1;
-        rightBorder.width = 3;
-        rightBorder.height = (this.radius + 1) * 2 + 1;
-
-        const topBorder = new Border();
-        topBorder.left = this.left - 1;
-        topBorder.top = this.top - 1;
-        topBorder.width = (this.radius + 1) * 2 + 1;
-        topBorder.height = 3;
-
-        const bottomBorder = new Border();
-        bottomBorder.left = this.left - 1;
-        bottomBorder.top = this.bottom - 1;
-        bottomBorder.width = (this.radius + 1) * 2 + 1;
-        bottomBorder.height = 3;
-                
-        this.borders = [leftBorder, rightBorder, topBorder, bottomBorder];
-    }
-
     refreshBounds() {
-        this.left = this.position.x - this.radius;
-        this.right = this.position.x + this.radius;
-        this.top = this.position.y - this.radius;
-        this.bottom = this.position.y + this.radius;
+        const radiusAdjusted = this.radius + 1;
+        this.left = this.position.x - radiusAdjusted;
+        this.right = this.position.x + radiusAdjusted;
+        this.top = this.position.y - radiusAdjusted;
+        this.bottom = this.position.y + radiusAdjusted;
     }
 
     refreshVisibleTiles() {
@@ -99,7 +69,7 @@ export class Camera {
     }
 
     getCoordinatesInFOV() {
-        const fov = new ROT.FOV.PreciseShadowcasting((x, y) => {
+        const fieldOfView = new ROT.FOV.PreciseShadowcasting((x, y) => {
             const tile = this.tileManager.getTile(x, y);
 
             if(!tile) {
@@ -113,13 +83,13 @@ export class Camera {
             return true;
         });
 
-        const coordinatesInFOV = new Set<string>();
+        const coordinatesInFieldOfView = new Set<string>();
 
-        fov.compute(this.position.x, this.position.y, 9, (x, y, r, visibility) => {
-            coordinatesInFOV.add(`${x},${y}`);
+        fieldOfView.compute(this.position.x, this.position.y, this.radius + 1, (x, y, r, visibility) => {
+            coordinatesInFieldOfView.add(`${x},${y}`);
         });
 
-        return coordinatesInFOV;
+        return coordinatesInFieldOfView;
     }
 
     refreshVisiblePlayers() {
