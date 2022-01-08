@@ -1,6 +1,8 @@
 import { Injectable } from "@angular/core";
+import { PlayerDto } from "../../../shared";
 import { Camera } from "./camera";
 import { PlayerManager } from "./player-manager";
+import { TileManager } from "./tile-manager";
 
 @Injectable({
     providedIn: 'root'
@@ -20,6 +22,7 @@ export class Renderer {
     constructor(
         private camera: Camera,
         private playerManager: PlayerManager,
+        private tileManager: TileManager,
     ) {
         this.images = new Map<string, HTMLImageElement>();
         this.images.set('water', this.loadImage("/assets/dngn_deep_water.png"));
@@ -72,6 +75,7 @@ export class Renderer {
         // this may be necessary to properly display a column of other players
         this.playerManager.otherPlayers.sort((a, b) => a.position.y - b.position.y);
 
+        // players above me
         for(let player of this.playerManager.otherPlayers.filter(player => player.position.y < this.playerManager.me.position.y)) {
 
             if(!this.camera.canSee(player.position)) {
@@ -85,7 +89,7 @@ export class Renderer {
             this.drawSprite(
                 targetContext,
                 player.avatar!,
-                0,
+                player.animating ? player.getFrameIndex() : 0,
                 player.getDirectionIndex() ?? 2,
                 position.x - this.camera.position.x + this.camera.radius,
                 position.y - this.camera.position.y + this.camera.radius);
@@ -96,15 +100,20 @@ export class Renderer {
         this.drawSprite(
             targetContext,
             me.avatar!,
-            0,
+            me.animating ? me.getFrameIndex() : 0,
             me.getDirectionIndex() ?? 2,
             myPosition.x - this.camera.position.x + this.camera.radius,
             myPosition.y - this.camera.position.y + this.camera.radius,
         );
 
+        // players at same level or below me
         for(let player of this.playerManager.otherPlayers.filter(player => player.position.y >= this.playerManager.me.position.y)) {
 
             if(!this.camera.canSee(player.position)) {
+                continue;
+            }
+
+            if(this.playersHeadIsPokingUp(player)) {
                 continue;
             }
 
@@ -115,7 +124,7 @@ export class Renderer {
             this.drawSprite(
                 targetContext,
                 player.avatar!,
-                0,
+                player.animating ? player.getFrameIndex() : 0,
                 player.getDirectionIndex() ?? 2,
                 position.x - this.camera.position.x + this.camera.radius,
                 position.y - this.camera.position.y + this.camera.radius);
@@ -129,6 +138,13 @@ export class Renderer {
 
         this.context.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
         this.context.drawImage(targetCanvas, 0, 0);
+    }
+
+    playersHeadIsPokingUp(player: PlayerDto) {
+        const positionAbovePlayer = player.position.move('up');
+        const tileAbovePlayerIsWall = this.tileManager.getTile(positionAbovePlayer.x, positionAbovePlayer.y)?.type === 0;
+
+        return !this.camera.coordinatesInFieldOfView.has(player.position.toCoordinateString()) && tileAbovePlayerIsWall;
     }
 
     drawTile(context: CanvasRenderingContext2D, name: string, dx: number, dy: number) {

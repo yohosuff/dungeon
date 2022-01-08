@@ -16,16 +16,24 @@ export class PlayerDto {
     animationDuration = 200;
 
     directionIndexMap: Map<string,number>;
-
+    
     constructor(x: number = 0, y: number = 0) {
         this.position = new Position(x, y);
 
         const directionIndexMap = new Map<string,number>();
-        directionIndexMap.set('down', 2);
-        directionIndexMap.set('right', 3);
-        directionIndexMap.set('up', 4);
-        directionIndexMap.set('left', 5);
+        directionIndexMap.set('up', 8);
+        directionIndexMap.set('left', 9);
+        directionIndexMap.set('down', 10);
+        directionIndexMap.set('right', 11);
         this.directionIndexMap = directionIndexMap;
+    }
+
+    getFrameIndex() {
+        const timePerFrame = 50;
+        const frameCount = 8;
+        const frameIndex = 1 + Math.floor((performance.now() % (timePerFrame * frameCount)) / timePerFrame);
+
+        return frameIndex;
     }
 
     getDirectionIndex() {
@@ -44,7 +52,7 @@ export class PlayerDto {
         const animationElapsed = performance.now() - this.actionStartTime;
         const percentComplete = Math.min(animationElapsed, this.animationDuration) / this.animationDuration;
 
-        if(percentComplete >= 1) {
+        if(percentComplete >= 1.0) {
             this.animating = false;
         }
 
