@@ -26,7 +26,6 @@ export class CommunicationService {
         this.waitingForServer = false;
 
         this.messageBus.subscribe(ClientEvent.ServerUpdatedMe, (playerDto: PlayerDto) => {
-            // console.log('server updated me')
             this.waitingForServer = false;
         });
     }
@@ -120,7 +119,6 @@ export class CommunicationService {
         });
 
         authenticatedSocket.on(DungeonEvent.UpdatePlayer, (playerDto: PlayerDto) => {
-            // console.log('update player');
             playerDto = PlayerDto.reconstruct(playerDto);
             this.messageBus.publish(ClientEvent.ServerUpdatedPlayer, playerDto);
         });

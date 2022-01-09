@@ -9,11 +9,11 @@ import { TileManager } from "./tile-manager";
 })
 export class Renderer {
     
-    canvas!: HTMLCanvasElement;
-    context!: CanvasRenderingContext2D;
+    primaryCanvas!: HTMLCanvasElement;
+    primaryContext!: CanvasRenderingContext2D;
 
-    offScreenCanvas!: HTMLCanvasElement;
-    offScreenContext!: CanvasRenderingContext2D;
+    secondaryCanvas!: HTMLCanvasElement;
+    secondaryContext!: CanvasRenderingContext2D;
 
     images: Map<string, HTMLImageElement>;
     tileSize: number;
@@ -41,20 +41,19 @@ export class Renderer {
     }
 
     setCanvas(canvas: HTMLCanvasElement) {
-        // TODO: rename these primary and secondary canvas
-        this.canvas = canvas;
-        this.context = canvas.getContext('2d')!;
-        this.offScreenCanvas = document.createElement('canvas');
-        this.offScreenCanvas.width = canvas.width;
-        this.offScreenCanvas.height = canvas.height;
-        this.offScreenContext = this.offScreenCanvas.getContext('2d')!;
+        this.primaryCanvas = canvas;
+        this.primaryContext = canvas.getContext('2d')!;
+        this.secondaryCanvas = document.createElement('canvas');
+        this.secondaryCanvas.width = canvas.width;
+        this.secondaryCanvas.height = canvas.height;
+        this.secondaryContext = this.secondaryCanvas.getContext('2d')!;
     }
 
     draw() {
-        const targetContext = this.offScreenContext;
-        const targetCanvas = this.offScreenCanvas;
+        const context = this.secondaryContext;
+        const canvas = this.secondaryCanvas;
 
-        targetContext.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+        context.clearRect(0, 0, canvas.width, canvas.height);
 
         const me = this.playerManager.me;
 
@@ -69,13 +68,13 @@ export class Renderer {
         for(let tile of this.camera.visibleTiles.filter(tile => tile.inFOV)) {
             const dx = tile.position.x - this.camera.position.x + this.camera.radius;
             const dy = tile.position.y - this.camera.position.y + this.camera.radius;
-            this.drawTile(targetContext, tile.type === 0 ? 'water' : 'stone', dx, dy);
+            this.drawTile(context, tile.type === 0 ? 'water' : 'stone', dx, dy);
         }
 
         // this may be necessary to properly display a column of other players
         this.playerManager.otherPlayers.sort((a, b) => a.position.y - b.position.y);
 
-        // players above me
+        // render other players above me
         for(let player of this.playerManager.otherPlayers.filter(player => player.position.y < this.playerManager.me.position.y)) {
 
             if(!this.camera.canSee(player.position)) {
@@ -87,7 +86,7 @@ export class Renderer {
             const position = player.animating ? player.animatedPosition : player.position;
 
             this.drawSprite(
-                targetContext,
+                context,
                 player.avatar!,
                 player.animating ? player.getFrameIndex() : 0,
                 player.getDirectionIndex() ?? 2,
@@ -95,10 +94,11 @@ export class Renderer {
                 position.y - this.camera.position.y + this.camera.radius);
         }
 
+        // render me
         const myPosition = me.animating ? me.animatedPosition : me.position;
 
         this.drawSprite(
-            targetContext,
+            context,
             me.avatar!,
             me.animating ? me.getFrameIndex() : 0,
             me.getDirectionIndex() ?? 2,
@@ -106,7 +106,7 @@ export class Renderer {
             myPosition.y - this.camera.position.y + this.camera.radius,
         );
 
-        // players at same level or below me
+        // render other players at same level or below me
         for(let player of this.playerManager.otherPlayers.filter(player => player.position.y >= this.playerManager.me.position.y)) {
 
             if(!this.camera.canSee(player.position)) {
@@ -122,7 +122,7 @@ export class Renderer {
             const position = player.animating ? player.animatedPosition : player.position;
 
             this.drawSprite(
-                targetContext,
+                context,
                 player.avatar!,
                 player.animating ? player.getFrameIndex() : 0,
                 player.getDirectionIndex() ?? 2,
@@ -130,14 +130,15 @@ export class Renderer {
                 position.y - this.camera.position.y + this.camera.radius);
         }
 
+        // render black 'covering' tiles
         for(let tile of this.camera.visibleTiles.filter(tile => !tile.inFOV)) {
             const dx = tile.position.x - this.camera.position.x + this.camera.radius;
             const dy = tile.position.y - this.camera.position.y + this.camera.radius;
-            this.drawTile(targetContext, 'black', dx, dy);
+            this.drawTile(context, 'black', dx, dy);
         }
 
-        this.context.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
-        this.context.drawImage(targetCanvas, 0, 0);
+        this.primaryContext.clearRect(0, 0, canvas.width, canvas.height);
+        this.primaryContext.drawImage(canvas, 0, 0);
     }
 
     playersHeadIsPokingUp(player: PlayerDto) {
@@ -147,23 +148,23 @@ export class Renderer {
         return !this.camera.coordinatesInFieldOfView.has(player.position.toCoordinateString()) && tileAbovePlayerIsWall;
     }
 
-    drawTile(context: CanvasRenderingContext2D, name: string, dx: number, dy: number) {
+    drawTile(context: CanvasRenderingContext2D, name: string, destinationX: number, destinationY: number) {
         context.drawImage(
             this.images.get(name)!,
-            dx * this.tileSize,
-            dy * this.tileSize,
+            destinationX * this.tileSize,
+            destinationY * this.tileSize,
         );
     }
 
-    drawSprite(context: CanvasRenderingContext2D, name: string, sx: number, sy: number, dx: number, dy: number) {
+    drawSprite(context: CanvasRenderingContext2D, name: string, sourceX: number, sourceY: number, destinationX: number, destinationY: number) {
         context.drawImage(
             this.images.get(name)!,
-            sx * this.spriteSize,
-            sy * this.spriteSize,
+            sourceX * this.spriteSize,
+            sourceY * this.spriteSize,
             this.spriteSize,
             this.spriteSize,
-            dx * this.tileSize - 16,
-            dy * this.tileSize - 32,
+            destinationX * this.tileSize - 16,
+            destinationY * this.tileSize - 32,
             this.spriteSize,
             this.spriteSize,
         );
