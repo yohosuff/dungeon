@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { PlayerDto } from "../../../shared";
+import { PlayerDto, Position } from "../../../shared";
 import { Camera } from "./camera";
 import { PlayerManager } from "./player-manager";
 import { ImageManager as ImageManager } from "./image-manager";
@@ -52,9 +52,7 @@ export class Renderer {
         }
         
         for(let tile of this.camera.visibleTiles.filter(tile => tile.inFOV)) {
-            const dx = tile.position.x - this.camera.position.x + this.camera.radius;
-            const dy = tile.position.y - this.camera.position.y + this.camera.radius;
-            this.drawTile(context, tile.type === 0 ? 'water' : 'stone', dx, dy);
+            this.drawTile(context, tile.type === 0 ? 'water' : 'stone', tile.position);
         }
 
         this.playerManager.sortOtherPlayersByY();
@@ -74,20 +72,15 @@ export class Renderer {
                 player.avatar!,
                 player.animating ? player.getFrameIndex() : 0,
                 player.getDirectionIndex() ?? 2,
-                position.x - this.camera.position.x + this.camera.radius,
-                position.y - this.camera.position.y + this.camera.radius);
+                position);
         }
-
-        // render me
-        const myPosition = me.animating ? me.animatedPosition : me.position;
 
         this.drawSprite(
             context,
             me.avatar!,
             me.animating ? me.getFrameIndex() : 0,
             me.getDirectionIndex() ?? 2,
-            myPosition.x - this.camera.position.x + this.camera.radius,
-            myPosition.y - this.camera.position.y + this.camera.radius,
+            me.animating ? me.animatedPosition : me.position,
         );
 
         for(let player of this.playerManager.getOtherPlayersBelowMe()) {
@@ -109,15 +102,11 @@ export class Renderer {
                 player.avatar!,
                 player.animating ? player.getFrameIndex() : 0,
                 player.getDirectionIndex() ?? 2,
-                position.x - this.camera.position.x + this.camera.radius,
-                position.y - this.camera.position.y + this.camera.radius);
+                position);
         }
 
-        // render black 'covering' tiles
         for(let tile of this.camera.visibleTiles.filter(tile => !tile.inFOV)) {
-            const dx = tile.position.x - this.camera.position.x + this.camera.radius;
-            const dy = tile.position.y - this.camera.position.y + this.camera.radius;
-            this.drawTile(context, 'black', dx, dy);
+            this.drawTile(context, 'black', tile.position);
         }
 
         this.primaryContext.clearRect(0, 0, canvas.width, canvas.height);
@@ -131,23 +120,29 @@ export class Renderer {
         return !tileInFieldOfView && tileAbovePlayerIsWall;
     }
 
-    drawTile(context: CanvasRenderingContext2D, name: string, destinationX: number, destinationY: number) {
+    drawTile(context: CanvasRenderingContext2D, name: string, position: Position) {
+        const dx = position.x - this.camera.position.x + this.camera.radius;
+        const dy = position.y - this.camera.position.y + this.camera.radius;
+
         context.drawImage(
             this.imageManager.getImage(name),
-            destinationX * this.tileSize,
-            destinationY * this.tileSize,
+            dx * this.tileSize,
+            dy * this.tileSize,
         );
     }
 
-    drawSprite(context: CanvasRenderingContext2D, name: string, sourceX: number, sourceY: number, destinationX: number, destinationY: number) {
+    drawSprite(context: CanvasRenderingContext2D, name: string, sourceX: number, sourceY: number, position: Position) {
+        const x = position.x - this.camera.position.x + this.camera.radius;
+        const y = position.y - this.camera.position.y + this.camera.radius;
+
         context.drawImage(
             this.imageManager.getImage(name),
             sourceX * this.spriteSize,
             sourceY * this.spriteSize,
             this.spriteSize,
             this.spriteSize,
-            destinationX * this.tileSize - 16,
-            destinationY * this.tileSize - 32,
+            x * this.tileSize - 16,
+            y * this.tileSize - 32,
             this.spriteSize,
             this.spriteSize,
         );

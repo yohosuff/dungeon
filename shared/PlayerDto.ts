@@ -32,7 +32,6 @@ export class PlayerDto {
         const timePerFrame = 50;
         const frameCount = 8;
         const frameIndex = 1 + Math.floor((performance.now() % (timePerFrame * frameCount)) / timePerFrame);
-
         return frameIndex;
     }
 
