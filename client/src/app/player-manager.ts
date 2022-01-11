@@ -81,14 +81,14 @@ export class PlayerManager {
             return;
         }
 
-        const moving = !player.position.equals(playerDto.position);
+        const isMoving = !player.position.equals(playerDto.position);
         
         player.lastPosition = player.position;
         player.position = playerDto.position;
         player.direction = playerDto.direction;
-        player.action = `${moving ? 'walk' : 'face'}-${playerDto.direction}`;
+        player.action = `${isMoving ? 'walk' : 'face'}-${playerDto.direction}`;
         player.actionStartTime = performance.now();
-        player.animating = true;
+        player.animating = isMoving;
 
         this.messageBus.publish(ClientEvent.ClientUpdatedPlayer, player);
     }
