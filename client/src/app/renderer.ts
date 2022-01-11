@@ -16,18 +16,15 @@ export class Renderer {
     secondaryCanvas!: HTMLCanvasElement;
     secondaryContext!: CanvasRenderingContext2D;
 
-    tileSize: number;
-    spriteSize: number;
+    tileSize = 32;
+    spriteSize = 64;
 
     constructor(
         private camera: Camera,
         private playerManager: PlayerManager,
         private tileManager: TileManager,
         private imageManager: ImageManager,
-    ) {
-        this.tileSize = 32;
-        this.spriteSize = 64;
-    }
+    ) {}
 
     setCanvas(canvas: HTMLCanvasElement) {
         this.primaryCanvas = canvas;
@@ -60,11 +57,9 @@ export class Renderer {
             this.drawTile(context, tile.type === 0 ? 'water' : 'stone', dx, dy);
         }
 
-        // this may be necessary to properly display a column of other players
-        this.playerManager.otherPlayers.sort((a, b) => a.position.y - b.position.y);
+        this.playerManager.sortOtherPlayersByY();
 
-        // render other players above me
-        for(let player of this.playerManager.otherPlayers.filter(player => player.position.y < this.playerManager.me.position.y)) {
+        for(let player of this.playerManager.getOtherPlayersAboveMe()) {
 
             if(!this.camera.canSee(player.position)) {
                 continue;
@@ -95,8 +90,7 @@ export class Renderer {
             myPosition.y - this.camera.position.y + this.camera.radius,
         );
 
-        // render other players at same level or below me
-        for(let player of this.playerManager.otherPlayers.filter(player => player.position.y >= this.playerManager.me.position.y)) {
+        for(let player of this.playerManager.getOtherPlayersBelowMe()) {
 
             if(!this.camera.canSee(player.position)) {
                 continue;
@@ -132,9 +126,9 @@ export class Renderer {
 
     playersHeadIsPokingUp(player: PlayerDto) {
         const positionAbovePlayer = player.position.move('up');
-        const tileAbovePlayerIsWall = this.tileManager.getTile(positionAbovePlayer.x, positionAbovePlayer.y)?.type === 0;
-
-        return !this.camera.coordinatesInFieldOfView.has(player.position.toCoordinateString()) && tileAbovePlayerIsWall;
+        const tileAbovePlayerIsWall = this.tileManager.getTileByPosition(positionAbovePlayer)?.type === 0;
+        const tileInFieldOfView = this.camera.coordinatesInFieldOfView.has(player.position.toCoordinateString());
+        return !tileInFieldOfView && tileAbovePlayerIsWall;
     }
 
     drawTile(context: CanvasRenderingContext2D, name: string, destinationX: number, destinationY: number) {

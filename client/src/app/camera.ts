@@ -55,7 +55,7 @@ export class Camera {
         for(let x = this.left; x <= this.right; ++x) {
             for(let y = this.top; y <= this.bottom; ++y) {
                 
-                const tile = this.tileManager.getTile(x, y);
+                const tile = this.tileManager.getTileByXY(x, y);
 
                 if(!tile) {
                     continue;
@@ -72,7 +72,7 @@ export class Camera {
 
     updateCoordinatesInFOV() {
         const fieldOfView = new ROT.FOV.PreciseShadowcasting((x, y) => {
-            const tile = this.tileManager.getTile(x, y);
+            const tile = this.tileManager.getTileByXY(x, y);
 
             if(!tile) {
                 return false;

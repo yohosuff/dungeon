@@ -32,9 +32,13 @@ export class TileManager {
         return tile.type === 1;
     }
 
-    getTile(x: number, y: number) {
+    getTileByXY(x: number, y: number) {
         const position = new Position(x, y);
         const coordinateString = position.toCoordinateString();
         return this.tilesMap.get(coordinateString);
+    }
+
+    getTileByPosition(position: Position) {
+        return this.getTileByXY(position.x, position.y);
     }
 }

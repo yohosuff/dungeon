@@ -31,7 +31,7 @@ export class Game {
         this.io = new Server({
             serveClient: false,
             cors: {
-                origin: "http://68.149.100.88",
+                origin: "http://10.0.0.115",
             },
         });
 
@@ -68,7 +68,6 @@ export class Game {
             console.log('loaded player', player.getDto());
         }
     }
-
 
     private placePlayerOnRandomTile(player: Player) {
         const allPlayersCoordinates = this.players.reduce((set, player) => set.add(player.position.toCoordinateString()), new Set<string>());

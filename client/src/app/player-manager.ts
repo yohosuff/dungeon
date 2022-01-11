@@ -8,6 +8,7 @@ import { TileManager } from "./tile-manager";
     providedIn: 'root'
 })
 export class PlayerManager {
+    
     me!: PlayerDto;
     otherPlayers!: PlayerDto[];
     
@@ -29,6 +30,19 @@ export class PlayerManager {
                 this.updatePlayer(playerDto);
             }
         });
+    }
+
+    // this will be necessary to properly display a column of other players
+    sortOtherPlayersByY() {
+        this.otherPlayers.sort((a, b) => a.position.y - b.position.y);
+    }
+
+    getOtherPlayersAboveMe() {
+        return this.otherPlayers.filter(player => player.position.y < this.me.position.y);
+    }
+
+    getOtherPlayersBelowMe() {
+        return this.otherPlayers.filter(player => player.position.y >= this.me.position.y);
     }
 
     moveMe(direction: string): string {
