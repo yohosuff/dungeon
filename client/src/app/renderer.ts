@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { PlayerDto } from "../../../shared";
 import { Camera } from "./camera";
 import { PlayerManager } from "./player-manager";
+import { ImageManager as ImageManager } from "./image-manager";
 import { TileManager } from "./tile-manager";
 
 @Injectable({
@@ -15,7 +16,6 @@ export class Renderer {
     secondaryCanvas!: HTMLCanvasElement;
     secondaryContext!: CanvasRenderingContext2D;
 
-    images: Map<string, HTMLImageElement>;
     tileSize: number;
     spriteSize: number;
 
@@ -23,21 +23,10 @@ export class Renderer {
         private camera: Camera,
         private playerManager: PlayerManager,
         private tileManager: TileManager,
+        private imageManager: ImageManager,
     ) {
-        this.images = new Map<string, HTMLImageElement>();
-        this.images.set('water', this.loadImage("/assets/dngn_deep_water.png"));
-        this.images.set('stone', this.loadImage("/assets/rect_gray0.png"));
-        this.images.set('black', this.loadImage("/assets/black.png"));
-        this.images.set('brad', this.loadImage("/assets/brad.png"));
-        this.images.set('jack', this.loadImage("/assets/jack.png"));
         this.tileSize = 32;
         this.spriteSize = 64;
-    }
-
-    private loadImage(src: string) {
-        const image = new Image();
-        image.src = src;
-        return image;
     }
 
     setCanvas(canvas: HTMLCanvasElement) {
@@ -150,7 +139,7 @@ export class Renderer {
 
     drawTile(context: CanvasRenderingContext2D, name: string, destinationX: number, destinationY: number) {
         context.drawImage(
-            this.images.get(name)!,
+            this.imageManager.getImage(name),
             destinationX * this.tileSize,
             destinationY * this.tileSize,
         );
@@ -158,7 +147,7 @@ export class Renderer {
 
     drawSprite(context: CanvasRenderingContext2D, name: string, sourceX: number, sourceY: number, destinationX: number, destinationY: number) {
         context.drawImage(
-            this.images.get(name)!,
+            this.imageManager.getImage(name),
             sourceX * this.spriteSize,
             sourceY * this.spriteSize,
             this.spriteSize,
