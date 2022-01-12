@@ -52,19 +52,8 @@ export class AppComponent {
   }
 
   loop() {
-    const me = this.playerManager.me;
-
-    if (!this.communicationService.waitingForServer) {
-      this.inputManager.handleInput();
-    }
-
-    if (this.inputManager.nextMoveTime <= performance.now() && me.action?.startsWith('walk-')) {
-      me.action = `face-${me.direction}`;
-      this.communicationService.authenticatedSocket.emit(DungeonEvent.ChangeDirection, me.direction);
-    }
-
+    this.inputManager.handleInput();
     this.renderer.draw();
-    
     window.requestAnimationFrame(this.loop.bind(this));
   }
 

@@ -10,6 +10,7 @@ export class Player {
     position: Position;
     direction: string;
     avatar: string;
+    pressingKey: boolean;
 
     constructor() {}
 
@@ -85,15 +86,18 @@ export class Player {
                 // await new Promise(resolve => setTimeout(resolve, 200)); // simulate lag
             } else {
                 this.position = Position.reconstruct(newPosition);
-                this.game.playerManager.savePlayer(this);
             }
 
+            this.game.playerManager.savePlayer(this);
+
+            this.pressingKey = true;
             this.emitUpdate();
         });
 
         socket.on(DungeonEvent.ChangeDirection, async direction => {
             this.direction = direction;
             this.game.playerManager.savePlayer(this);
+            this.pressingKey = false;
             this.emitUpdate();
         });
 
@@ -123,6 +127,7 @@ export class Player {
         dto.email = this.email;
         dto.direction = this.direction;
         dto.avatar = this.avatar;
+        dto.pressingKey = this.pressingKey;
         return dto;
     }
 }

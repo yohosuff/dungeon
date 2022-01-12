@@ -11,14 +11,13 @@ export class InputManager {
     
     input: Map<string, boolean>;
     keys: string[];
-    map: Map<string, string>;
+    directionMap: Map<string, string>;
     autoMoveRight: boolean;
     nextMoveTime: number;
     
     constructor(
         private playerManager: PlayerManager,
         private communicationService: CommunicationService,
-        private camera: Camera,
     ) {
         this.nextMoveTime = 0;
         this.input = new Map<string, boolean>();
@@ -31,53 +30,52 @@ export class InputManager {
             'KeyW', 'ArrowUp',
         ];
 
-        this.map = new Map<string, string>();
-        this.map.set('KeyD', 'right');
-        this.map.set('KeyA', 'left');
-        this.map.set('KeyS', 'down');
-        this.map.set('KeyW', 'up');
-        this.map.set('ArrowRight', 'right');
-        this.map.set('ArrowLeft', 'left');
-        this.map.set('ArrowDown', 'down');
-        this.map.set('ArrowUp', 'up');
+        this.directionMap = new Map<string, string>();
+        this.directionMap.set('KeyD', 'right');
+        this.directionMap.set('KeyA', 'left');
+        this.directionMap.set('KeyS', 'down');
+        this.directionMap.set('KeyW', 'up');
+        this.directionMap.set('ArrowRight', 'right');
+        this.directionMap.set('ArrowLeft', 'left');
+        this.directionMap.set('ArrowDown', 'down');
+        this.directionMap.set('ArrowUp', 'up');
     }
 
     handleInput() {
-
-        if(performance.now() < this.nextMoveTime || this.playerManager.me.animating) {
+        if(performance.now() < this.nextMoveTime || this.playerManager.me.animating || this.communicationService.waitingForServer) {
             return;
         }
 
-        let direction;
+        let chosenDirection;
 
         for(let key of this.keys) {
             const pressed = this.input.get(key);
             
             if(pressed) {
-                direction = this.map.get(key);
+                chosenDirection = this.directionMap.get(key);
                 break;
             }
         }
 
-        if(!direction) {
+        const me = this.playerManager.me;
+
+        if(!chosenDirection) {
+            if(me.pressingKey) {
+                this.communicationService.authenticatedSocket.emit(DungeonEvent.ChangeDirection, me.direction);
+            }
+            me.pressingKey = false;
             return;
         }
 
-        this.playerManager.me.action === `walk-${direction}`;
+        me.pressingKey = true;
+        me.direction = chosenDirection;
+        me.action === `walk-${chosenDirection}`;
 
-        const result = this.playerManager.moveMe(direction);
+        this.playerManager.moveMe(chosenDirection);
 
-        switch(result) {
-            case 'position-changed':
-                // should we use an 'animating' state? ie. cannot accept new input while 'animating' is true...
-                this.nextMoveTime = performance.now() + 200;
-                this.communicationService.waitingForServer = true;
-                this.communicationService.authenticatedSocket.emit(DungeonEvent.Move, direction);
-                // this.camera.moveToPosition(this.playerManager.me.position);
-                break;
-            case 'direction-changed':
-                this.communicationService.authenticatedSocket.emit(DungeonEvent.ChangeDirection, direction);
-                break;
-        }
+        this.nextMoveTime = performance.now() + 200;
+        
+        this.communicationService.waitingForServer = true;
+        this.communicationService.authenticatedSocket.emit(DungeonEvent.Move, chosenDirection);
     }
 }

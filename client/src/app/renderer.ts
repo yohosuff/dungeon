@@ -70,7 +70,7 @@ export class Renderer {
             this.drawSprite(
                 context,
                 player.avatar!,
-                player.animating ? player.getFrameIndex() : 0,
+                player.pressingKey ? player.getFrameIndex() : 0,
                 player.getDirectionIndex() ?? 2,
                 position);
         }
@@ -78,7 +78,7 @@ export class Renderer {
         this.drawSprite(
             context,
             me.avatar!,
-            me.animating ? me.getFrameIndex() : 0,
+            me.pressingKey ? me.getFrameIndex() : 0,
             me.getDirectionIndex() ?? 2,
             me.animating ? me.animatedPosition : me.position,
         );
@@ -100,7 +100,7 @@ export class Renderer {
             this.drawSprite(
                 context,
                 player.avatar!,
-                player.animating ? player.getFrameIndex() : 0,
+                player.pressingKey ? player.getFrameIndex() : 0,
                 player.getDirectionIndex() ?? 2,
                 position);
         }

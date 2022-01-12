@@ -45,32 +45,21 @@ export class PlayerManager {
         return this.otherPlayers.filter(player => player.position.y >= this.me.position.y);
     }
 
-    moveMe(direction: string): string {
+    moveMe(direction: string) {
+        this.me.actionStartTime = performance.now();
+        this.me.animating = true;
+        this.me.lastPosition = this.me.position;
+
         const newPosition = this.me.position.move(direction);
         const playerCollision = this.otherPlayers.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
         const onTile = this.tileManager.isOnTile(newPosition);
+        const cannotMove = playerCollision || !onTile;
 
-        const blocked = playerCollision || !onTile;
-
-        if (blocked) {
-            this.me.action = `face-${direction}`;
-            
-            if(this.me.direction !== direction) {
-                this.me.direction = direction;
-                return 'direction-changed';
-            }
-
-            return 'blocked';
+        if (cannotMove) {
+            return;
         }
-
-        this.me.action = `walk-${direction}`;
-        this.me.lastPosition = this.me.position;
-        this.me.position = newPosition;
-        this.me.actionStartTime = performance.now();
-        this.me.animating = true;
-        this.me.direction = direction;
         
-        return 'position-changed';
+        this.me.position = newPosition;
     }
 
     updatePlayer(playerDto: PlayerDto) {
@@ -81,14 +70,14 @@ export class PlayerManager {
             return;
         }
 
-        const isMoving = !player.position.equals(playerDto.position);
+        const moved = !player.position.equals(playerDto.position);
         
         player.lastPosition = player.position;
         player.position = playerDto.position;
         player.direction = playerDto.direction;
-        player.action = `${isMoving ? 'walk' : 'face'}-${playerDto.direction}`;
         player.actionStartTime = performance.now();
-        player.animating = isMoving;
+        player.animating = moved;
+        player.pressingKey = playerDto.pressingKey;
 
         this.messageBus.publish(ClientEvent.ClientUpdatedPlayer, player);
     }

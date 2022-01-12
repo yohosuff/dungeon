@@ -16,9 +16,11 @@ export class PlayerDto {
     animationDuration = 200;
 
     directionIndexMap: Map<string,number>;
+    pressingKey: boolean;
     
     constructor(x: number = 0, y: number = 0) {
         this.position = new Position(x, y);
+        this.pressingKey = false;
 
         const directionIndexMap = new Map<string,number>();
         directionIndexMap.set('up', 8);
@@ -43,7 +45,6 @@ export class PlayerDto {
     // magnitude of vectors will always be 1 for players moving 1 square at a time!!
     // players will only every move in one dimension at a time, but this is just simpler
     updateAnimatedPosition() {
-
         if(!this.animating) {
             return;
         }
@@ -71,6 +72,7 @@ export class PlayerDto {
         dto.action = `face-${data.direction}`;
         dto.direction = data.direction;
         dto.avatar = data.avatar;
+        dto.pressingKey = data.pressingKey;
         return dto;
     }
 }
