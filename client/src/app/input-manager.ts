@@ -42,7 +42,7 @@ export class InputManager {
     }
 
     handleInput() {
-        if(performance.now() < this.nextMoveTime || this.playerManager.me.animating || this.communicationService.waitingForServer) {
+        if(performance.now() < this.nextMoveTime || this.communicationService.waitingForServer) {
             return;
         }
 
@@ -60,9 +60,11 @@ export class InputManager {
         const me = this.playerManager.me;
 
         if(!chosenDirection) {
+
             if(me.pressingKey) {
                 this.communicationService.authenticatedSocket.emit(DungeonEvent.ChangeDirection, me.direction);
             }
+
             me.pressingKey = false;
             return;
         }
@@ -72,9 +74,7 @@ export class InputManager {
         me.action === `walk-${chosenDirection}`;
 
         this.playerManager.moveMe(chosenDirection);
-
-        this.nextMoveTime = performance.now() + 200;
-        
+        this.nextMoveTime = performance.now() + 200;       
         this.communicationService.waitingForServer = true;
         this.communicationService.authenticatedSocket.emit(DungeonEvent.Move, chosenDirection);
     }

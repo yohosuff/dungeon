@@ -11,7 +11,7 @@ import * as ROT from 'rot-js';
 })
 export class Camera {
     position!: Position;
-    radius!: number;
+    radius = 8;
 
     visibleTiles!: Tile[];
     visiblePlayers!: PlayerDto[];
@@ -27,7 +27,6 @@ export class Camera {
         private playerManager: PlayerManager,
         private messageBus: MessageBus,
     ) {
-        this.radius = 8;
         this.position = new Position();
 
         this.refreshBounds();
@@ -51,9 +50,14 @@ export class Camera {
     refreshVisibleTiles() {
         const visibleTiles = [];
         this.updateCoordinatesInFOV();
+
+        const left = Math.round(this.left);
+        const right = Math.round(this.right);
+        const top = Math.round(this.top);
+        const bottom = Math.round(this.bottom);
         
-        for(let x = this.left; x <= this.right; ++x) {
-            for(let y = this.top; y <= this.bottom; ++y) {
+        for(let x = left; x <= right; ++x) {
+            for(let y = top; y <= bottom; ++y) {
                 
                 const tile = this.tileManager.getTileByXY(x, y);
 
@@ -87,8 +91,12 @@ export class Camera {
 
         const coordinatesInFieldOfView = new Set<string>();
 
-        fieldOfView.compute(this.position.x, this.position.y, this.radius + 1, (x, y, r, visibility) => {
-            coordinatesInFieldOfView.add(`${x},${y}`);
+        const x = Math.round(this.position.x);
+        const y = Math.round(this.position.y);
+
+        fieldOfView.compute(x, y, this.radius + 1, (x, y, r, visibility) => {
+            const coordinateString = `${x},${y}`;
+            coordinatesInFieldOfView.add(coordinateString);
         });
 
         this.coordinatesInFieldOfView = coordinatesInFieldOfView;
@@ -115,14 +123,11 @@ export class Camera {
             && position.y <= this.bottom;
     }
 
-    moveToPosition(position: Position, refresh: boolean = true) {
+    moveToPosition(position: Position) {
         this.position.x = position.x;
         this.position.y = position.y;
-        
-        if(refresh) {
-            this.refreshBounds();
-            this.refreshVisiblePlayers();
-            this.refreshVisibleTiles();
-        }
+        this.refreshBounds();
+        this.refreshVisiblePlayers();
+        this.refreshVisibleTiles();
     }
 }

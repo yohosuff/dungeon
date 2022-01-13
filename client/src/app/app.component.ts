@@ -1,5 +1,5 @@
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
-import { DungeonEvent, HelloDto } from '../../../shared';
+import { HelloDto } from '../../../shared';
 import { Constants } from './constants';
 import { CommunicationService } from './communication-service';
 import { InputManager } from './input-manager';
@@ -30,7 +30,6 @@ export class AppComponent {
     private tileManager: TileManager,
     private renderer: Renderer,
   ) {
-
     const token = localStorage.getItem(Constants.DungeonToken);
 
     if(token) {
@@ -44,9 +43,6 @@ export class AppComponent {
       this.playerManager.loadPlayers(helloDto.players, helloDto.email);
       this.tileManager.loadTiles(helloDto.tiles);
       this.camera.moveToPosition(this.playerManager.me.position);
-      this.camera.refreshVisiblePlayers();
-      this.camera.refreshVisibleTiles();
-      
       window.requestAnimationFrame(this.loop.bind(this));
     });
   }
@@ -69,7 +65,6 @@ export class AppComponent {
 
   @HostListener('document:keyup', ['$event'])
   onKeyUp(event: KeyboardEvent) {
-    
     this.inputManager.input.set(event.code, false);
 
     if (event.code === 'KeyP') {

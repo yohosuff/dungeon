@@ -42,20 +42,13 @@ export class PlayerDto {
     }
 
     // https://stackoverflow.com/questions/43626268/html-canvas-move-circle-from-a-to-b-with-animation
-    // magnitude of vectors will always be 1 for players moving 1 square at a time!!
-    // players will only every move in one dimension at a time, but this is just simpler
+    // Magnitude of vectors will always be 1 for players moving 1 square at a time.
+    // Players will only ever move in one dimension at a time, but it is just simpler to update both dimensions.
     updateAnimatedPosition() {
-        if(!this.animating) {
-            return;
-        }
-
         const animationElapsed = performance.now() - this.actionStartTime;
         const percentComplete = Math.min(animationElapsed, this.animationDuration) / this.animationDuration;
 
-        if(percentComplete >= 1.0) {
-            this.animating = false;
-        }
-
+        // could probably use a vector type here to do subtraction, multiplication, and addition
         const x = this.position.x - this.lastPosition.x;
         const y = this.position.y - this.lastPosition.y;
         
@@ -68,11 +61,13 @@ export class PlayerDto {
     static reconstruct(data: PlayerDto): PlayerDto {
         const dto = new PlayerDto();
         dto.position = Position.reconstruct(data.position);
+        dto.lastPosition = dto.position.clone();
         dto.email = data.email;
         dto.action = `face-${data.direction}`;
         dto.direction = data.direction;
         dto.avatar = data.avatar;
         dto.pressingKey = data.pressingKey;
+        dto.actionStartTime = performance.now();
         return dto;
     }
 }

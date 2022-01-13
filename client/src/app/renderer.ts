@@ -38,19 +38,14 @@ export class Renderer {
     draw() {
         const context = this.secondaryContext;
         const canvas = this.secondaryCanvas;
+        const me = this.playerManager.me;
 
         context.clearRect(0, 0, canvas.width, canvas.height);
 
-        const me = this.playerManager.me;
-
         me.updateAnimatedPosition();
         
-        if(me.animating) {
-            this.camera.moveToPosition(me.animatedPosition, false);
-        } else {
-            this.camera.moveToPosition(me.position);
-        }
-        
+        this.camera.moveToPosition(me.animatedPosition);
+
         for(let tile of this.camera.visibleTiles.filter(tile => tile.inFOV)) {
             this.drawTile(context, tile.type === 0 ? 'water' : 'stone', tile.position);
         }
@@ -65,14 +60,12 @@ export class Renderer {
 
             player.updateAnimatedPosition();
 
-            const position = player.animating ? player.animatedPosition : player.position;
-
             this.drawSprite(
                 context,
                 player.avatar!,
                 player.pressingKey ? player.getFrameIndex() : 0,
                 player.getDirectionIndex() ?? 2,
-                position);
+                player.animatedPosition);
         }
 
         this.drawSprite(
@@ -80,7 +73,7 @@ export class Renderer {
             me.avatar!,
             me.pressingKey ? me.getFrameIndex() : 0,
             me.getDirectionIndex() ?? 2,
-            me.animating ? me.animatedPosition : me.position,
+            me.animatedPosition,
         );
 
         for(let player of this.playerManager.getOtherPlayersBelowMe()) {
@@ -95,14 +88,12 @@ export class Renderer {
 
             player.updateAnimatedPosition();
 
-            const position = player.animating ? player.animatedPosition : player.position;
-
             this.drawSprite(
                 context,
                 player.avatar!,
                 player.pressingKey ? player.getFrameIndex() : 0,
                 player.getDirectionIndex() ?? 2,
-                position);
+                player.animatedPosition);
         }
 
         for(let tile of this.camera.visibleTiles.filter(tile => !tile.inFOV)) {
