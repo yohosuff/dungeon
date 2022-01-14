@@ -1,9 +1,17 @@
-<div class="dungeon" *ngIf="communicationService.authenticatedSocketConnected">
-  <canvas #canvas width="{{(camera.radius * 2 + 1) * 32}}" height="{{(camera.radius * 2 + 1) * 32}}"></canvas>
-</div>
-
 <div
-  class="position-absolute bottom-0 mb-1 ms-1"
+  class="position-absolute top-0 mt-1 mt-1"
   [style.z-index]="9999999">
   <authentication-widget></authentication-widget>
 </div>
+
+<div class="dungeon" *ngIf="communicationService.authenticatedSocketConnected">
+  <canvas #canvas width="{{(camera.radius * 2 + 1) * 32}}" height="{{(camera.radius * 2 + 1) * 32}}"></canvas>
+  <div class="d-flex mt-2" *ngIf="isTouchDevice">
+    <button class="navigation-button" (touchstart)="touchStart('ArrowUp')" (touchend)="touchEnd('ArrowUp')">UP</button>
+    <button class="navigation-button" (touchstart)="touchStart('ArrowDown')" (touchend)="touchEnd('ArrowDown')">DOWN</button>
+    <button class="navigation-button" (touchstart)="touchStart('ArrowLeft')" (touchend)="touchEnd('ArrowLeft')">LEFT</button>
+    <button class="navigation-button" (touchstart)="touchStart('ArrowRight')" (touchend)="touchEnd('ArrowRight')">RIGHT</button>
+  </div>
+  <div class="mt-2" *ngIf="!isTouchDevice">Use arrow keys or WASD to move around.</div>
+</div>
+

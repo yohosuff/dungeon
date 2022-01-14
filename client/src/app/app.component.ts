@@ -21,6 +21,8 @@ export class AppComponent {
 
   @ViewChild('canvas') canvasElementRef!: ElementRef<HTMLCanvasElement>;
 
+  isTouchDevice = 'ontouchstart' in window;
+
   constructor(
     public communicationService: CommunicationService,
     private inputManager: InputManager,
@@ -30,6 +32,7 @@ export class AppComponent {
     private tileManager: TileManager,
     private renderer: Renderer,
   ) {
+
     const token = localStorage.getItem(Constants.DungeonToken);
 
     if(token) {
@@ -75,5 +78,13 @@ export class AppComponent {
     if (event.code === 'KeyM') {
       this.inputManager.autoMoveRight = !this.inputManager.autoMoveRight;
     }
+  }
+
+  touchStart(code: string) {
+    this.inputManager.input.set(code, true);
+  }
+
+  touchEnd(code: string) {
+    this.inputManager.input.set(code, false);
   }
 }
