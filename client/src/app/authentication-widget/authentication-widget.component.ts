@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Modal } from 'bootstrap';
-import { Socket } from 'socket.io-client';
 import { DungeonEvent } from '../../../../shared'; //use @shared or something here instead of going up all those levels
 import { CommunicationService } from '../communication-service';
 import { Constants } from '../constants';

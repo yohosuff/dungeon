@@ -1,10 +1,3 @@
-$size: 64px;
-$up: 8;
-$left: 9;
-$down: 10;
-$right: 11;
-$animationSpeed: 400ms;
-
 .dungeon {
     display: flex;
     flex-direction: column;
@@ -18,125 +11,10 @@ $animationSpeed: 400ms;
     height: 100px;
     width: 100px;
     user-select: none;
+    -webkit-user-select: none; /* try this for safari */
 }
 
 canvas {
     border: 1px solid white;
     max-width: 95%;
 }
-
-.dungeon-border {
-    z-index: 999999;
-    position: absolute;
-    background-color: black;
-}
-
-.dungeon-border-pretty {
-    border: 20px solid slategray;
-    z-index: 999999999;
-    position: relative;
-    box-sizing: content-box;
-    border-style: ridge;
-}
-
-.tile {
-    position: absolute;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: left 200ms linear, top 200ms linear;
-}
-
-.black-tile {
-    z-index: 999999999;
-    position: relative;
-}
-
-.player {
-    transition: left 200ms linear, top 200ms linear;
-    width: $size;
-    height: $size;
-    overflow: hidden;
-    position: absolute;
-}
-
-.player img {
-    position: absolute;
-    width: calc($size * 13);
-    image-rendering: pixelated;
-}
-
-// left
-
-.face-left {
-    left: 0;
-    top: calc($size * $left * -1);
-}
-
-.walk-left {
-    animation: walkLeftAnimation $animationSpeed steps(8) infinite;
-    left: calc($size * -1);
-    top: calc($size * $left * -1);
-}
-
-@keyframes walkLeftAnimation {
-    from { transform: translate3d(0, 0, 0) }
-    to { transform: translate3d(calc($size * -8), 0, 0) }
-}
-
-// right
-
-.face-right {
-    left: 0;
-    top: calc($size * $right * -1);
-}
-
-.walk-right {
-    animation: walkRightAnimation $animationSpeed steps(8) infinite;
-    left: calc($size * -1);
-    top: calc($size * $right * -1);
-}
-
-@keyframes walkRightAnimation {
-    from { transform: translate3d(0, 0, 0) }
-    to { transform: translate3d(calc($size * 8 * -1), 0, 0) }
-}
-
-// up
-
-.face-up {
-    left: 0;
-    top: calc($size * $up * -1);
-}
-
-.walk-up {
-    animation: walkUpAnimation $animationSpeed steps(8) infinite;
-    left: calc($size * -1);
-    top: calc($size * $up * -1);
-}
-
-@keyframes walkUpAnimation {
-    from { transform: translate3d(0, 0, 0) }
-    to { transform: translate3d(calc($size * 8 * -1), 0, 0) }
-}
-
-// down
-
-.face-down {
-    left: 0;
-    top: calc($size * $down * -1);
-}
-
-.walk-down {
-    animation: walkDownAnimation $animationSpeed steps(8) infinite;
-    left: calc($size * -1);
-    top: calc($size * $down * -1);
-}
-
-@keyframes walkDownAnimation {
-    from { transform: translate3d(0, 0, 0) }
-    to { transform: translate3d(calc($size * 8 * -1), 0, 0) }
-}
-
