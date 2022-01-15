@@ -1,3 +1,7 @@
+* {
+    user-select: none;
+}
+
 .dungeon {
     display: flex;
     flex-direction: column;
@@ -10,8 +14,7 @@
 .navigation-button {
     height: 100px;
     width: 100px;
-    user-select: none;
-    -webkit-user-select: none; /* try this for safari */
+    max-width: 20%;
 }
 
 canvas {

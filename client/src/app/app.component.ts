@@ -9,6 +9,7 @@ import { Camera } from './camera';
 import { PlayerManager } from './player-manager';
 import { TileManager } from './tile-manager';
 import { Renderer } from './renderer';
+import screenfull from 'screenfull';
 
 @Component({
   selector: 'app-root',
@@ -48,6 +49,12 @@ export class AppComponent {
       this.camera.moveToPosition(this.playerManager.me.position);
       window.requestAnimationFrame(this.loop.bind(this));
     });
+  }
+
+  toggleFullscreen() {
+    if (screenfull.isEnabled) {
+      screenfull.toggle();
+    }
   }
 
   loop() {
