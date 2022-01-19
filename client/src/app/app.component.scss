@@ -13,6 +13,10 @@
     max-width: 23%;
 }
 
+.navigation-button:hover:not(:active) {
+    background-color: #6c757d;
+}
+
 canvas {
     border: 1px solid white;
     max-width: 95%;
