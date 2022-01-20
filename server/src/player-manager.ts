@@ -4,9 +4,6 @@ import { Constants } from "./constants";
 import { Game } from "./Game";
 import { PlayerDto } from "../../shared";
 
-// this should really be called the PlayerManager and should save more stuff 
-// than just positions (eg. direction, avatar, health, inventory, etc...)
-
 export class PlayerManager {
     
     players: Map<string, Player>;

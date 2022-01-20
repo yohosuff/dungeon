@@ -70,7 +70,10 @@ export class Game {
     }
 
     private placePlayerOnRandomTile(player: Player) {
-        const allPlayersCoordinates = this.players.reduce((set, player) => set.add(player.position.toCoordinateString()), new Set<string>());
+        const allPlayersCoordinates = this.players
+            .filter(p => p !== player)
+            .reduce((set, player) => set.add(player.position.toCoordinateString()), new Set<string>());
+
         const tilesArray = Array.from(this.tiles.values());
         let tile: Tile;
         
@@ -86,8 +89,7 @@ export class Game {
             tilesArray.splice(randomIndex, 1);
         }
 
-        player.position.x = tile.position.x;
-        player.position.y = tile.position.y;
+        player.position = tile.position.clone();
     }
 
     start() {
@@ -128,13 +130,12 @@ export class Game {
             });
 
             socket.on(DungeonEvent.Login, (credential: Credential) => {
-                const path = Constants.CREDENTIALS_PATH;
                 
-                if(!existsSync(path)) {
-                    writeFileSync(path, JSON.stringify([]));
+                if(!existsSync(Constants.CREDENTIALS_PATH)) {
+                    writeFileSync(Constants.CREDENTIALS_PATH, JSON.stringify([]));
                 }
     
-                const credentialsString = readFileSync(path, 'utf8');
+                const credentialsString = readFileSync(Constants.CREDENTIALS_PATH, 'utf8');
                 const credentials = JSON.parse(credentialsString) as Credential[];
                 credential.email = credential.email.toLowerCase();
                 const existingCredential = credentials.find(c => c.email === credential.email);
@@ -179,13 +180,19 @@ export class Game {
             const email = this.emails.get(socket.id);
             let player = this.players.find(player => player.email === email);
 
+            if(player?.socket) {
+                socket.emit(DungeonEvent.PlayerAlreadyHasSocket);
+                return;
+            }
+
             if(!player) {
                 player = new Player();
+                this.players.push(player);
                 player.email = email;
                 player.game = this;
                 player.setAvatar();
-                player.initializePosition();
-                this.players.push(player);
+                this.placePlayerOnRandomTile(player);
+                this.playerManager.savePlayer(player);
             }
 
             player.attachSocket(socket);

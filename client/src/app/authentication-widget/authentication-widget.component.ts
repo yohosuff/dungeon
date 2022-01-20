@@ -41,8 +41,7 @@ export class AuthenticationWidgetComponent {
   }
 
   logout() {
-    localStorage.removeItem(Constants.DungeonToken);
-    this.communicationService.authenticatedSocket.disconnect();
+    this.communicationService.logout();
   }
 
   showRegisterModal() {

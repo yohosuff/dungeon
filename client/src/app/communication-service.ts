@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
 import { io, Socket } from "socket.io-client";
+import Swal from "sweetalert2";
 import { DungeonEvent, HelloDto, PlayerDto } from "../../../shared";
 import { ClientEvent } from "./client-event";
 import { Constants } from "./constants";
@@ -30,6 +31,11 @@ export class CommunicationService {
         });
     }
 
+    logout() {
+        localStorage.removeItem(Constants.DungeonToken);
+        this.authenticatedSocket.disconnect();
+    }
+
     establishAnonymousSocketConnection() {
         
         let anonymousSocket = this.anonymousSocket;
@@ -54,11 +60,11 @@ export class CommunicationService {
         });
 
         anonymousSocket.on(DungeonEvent.LoginFailed, () => {
-            console.log('login failed');
+            Swal.fire('Login failed.');
         });
 
         anonymousSocket.on(DungeonEvent.EmailAlreadyTaken, () => {
-            console.log('email already taken');
+            Swal.fire('Email already taken.');
         });
 
         anonymousSocket.on(DungeonEvent.LoginSuccessful, token => {
@@ -104,8 +110,12 @@ export class CommunicationService {
             }
 
             this.authenticatedSocketConnected = true;
-    
             authenticatedSocket.emit(DungeonEvent.Hello);
+        });
+
+        authenticatedSocket.on(DungeonEvent.PlayerAlreadyHasSocket, () => {
+            Swal.fire('Your player is already connected to another client.');
+            this.logout();
         });
 
         authenticatedSocket.on(DungeonEvent.Hello, (helloDto: HelloDto) => {

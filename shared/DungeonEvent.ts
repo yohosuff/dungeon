@@ -12,6 +12,7 @@ export class DungeonEvent {
     public static readonly Login = "Login";
     public static readonly LoginFailed = "LoginFailed";
     public static readonly LoginSuccessful = "LoginSuccessful";
+    public static readonly PlayerAlreadyHasSocket = "PlayerAlreadyHasSocket";
     
     // game events
     public static readonly Hello = "Hello";
@@ -20,4 +21,5 @@ export class DungeonEvent {
     public static readonly UpdatePlayer = "UpdatePlayer";
     public static readonly PlayerLeft = "PlayerLeft";
     public static readonly PlayerJoined = "PlayerJoined";
+    
 }

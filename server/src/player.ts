@@ -38,22 +38,6 @@ export class Player {
         socket.broadcast.emit(DungeonEvent.PlayerJoined, this.getDto());
     }
 
-    initializePosition() {
-        const positions = this.game.players.reduce((set, player) => {
-            set.add(player.position.toCoordinateString());
-            return set;
-        }, new Set<string>());
-        
-        const position = new Position(0, 0);
-
-        while(positions.has(position.toCoordinateString())) {
-            position.x += 1;
-        }
-
-        this.position = position;
-        this.game.playerManager.savePlayer(this);
-    }
-
     setupListeners() {
         const socket = this.socket;
         
@@ -102,6 +86,7 @@ export class Player {
         });
 
         socket.on(DungeonEvent.Disconnect, () => {
+            this.socket = undefined;
             socket.broadcast.emit(DungeonEvent.PlayerLeft, this.email);
         });
     }
