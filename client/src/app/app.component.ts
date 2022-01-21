@@ -44,7 +44,7 @@ export class AppComponent {
 
     this.messageBus.subscribe(ClientEvent.ServerSaidHello, (helloDto: HelloDto) => {
       this.renderer.setCanvas(this.canvasElementRef.nativeElement);
-      this.playerManager.loadPlayers(helloDto.players, helloDto.email);
+      this.playerManager.loadPlayers(helloDto.players, helloDto.username);
       this.tileManager.loadTiles(helloDto.tiles);
       this.camera.moveToPosition(this.playerManager.me.position);
       window.requestAnimationFrame(this.loop.bind(this));

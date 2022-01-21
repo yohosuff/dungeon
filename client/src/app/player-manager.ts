@@ -24,7 +24,7 @@ export class PlayerManager {
         });
 
         this.messageBus.subscribe(ClientEvent.ServerUpdatedPlayer, (playerDto: PlayerDto) => {
-            if (playerDto.email === this.me.email) {
+            if (playerDto.username === this.me.username) {
                 this.messageBus.publish(ClientEvent.ServerUpdatedMe, playerDto);
             } else {
                 this.updatePlayer(playerDto);
@@ -63,7 +63,7 @@ export class PlayerManager {
     }
 
     updatePlayer(playerDto: PlayerDto) {
-        let player = this.otherPlayers.find(player => player.email === playerDto.email);
+        let player = this.otherPlayers.find(player => player.username === playerDto.username);
 
         if (!player) {
             console.warn('received playerDto for player not in otherPlayers list');
@@ -83,7 +83,7 @@ export class PlayerManager {
     }
 
     addPlayer(playerDto: PlayerDto) {
-        const existingPlayer = this.otherPlayers.find(player => player.email === playerDto.email);
+        const existingPlayer = this.otherPlayers.find(player => player.username === playerDto.username);
 
         if(existingPlayer) {
             return;
@@ -92,17 +92,17 @@ export class PlayerManager {
         this.otherPlayers.push(playerDto);
     }
 
-    loadPlayers(players: PlayerDto[], email: string) {
+    loadPlayers(players: PlayerDto[], username: string) {
         this.otherPlayers = [];
 
         for (let player of players) {
             
-            if (player.email === email) {
+            if (player.username === username) {
                 this.me = player;
                 continue;
             }
 
-            if (this.otherPlayers.some(otherPlayer => otherPlayer.email === player.email)) {
+            if (this.otherPlayers.some(otherPlayer => otherPlayer.username === player.username)) {
                 continue;
             }
 

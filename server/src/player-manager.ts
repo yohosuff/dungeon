@@ -14,12 +14,12 @@ export class PlayerManager {
         this.loadPlayers();
     }
 
-    getPlayer(email: string) {
-        return this.players.get(email);
+    getPlayer(username: string) {
+        return this.players.get(username);
     }
 
     savePlayer(player: Player) {
-        this.players.set(player.email, player);
+        this.players.set(player.username, player);
         this.savePlayers(this.players);
     }
 
@@ -34,7 +34,7 @@ export class PlayerManager {
 
         for(let playerDto of playersDtos) {
             const player = Player.reconstruct(playerDto);
-            players.set(player.email, player);
+            players.set(player.username, player);
         }
 
         this.players = players;

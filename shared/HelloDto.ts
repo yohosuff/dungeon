@@ -2,6 +2,6 @@ import { PlayerDto } from ".";
 
 export class HelloDto {
     players!: PlayerDto[];
-    email!: string;
+    username!: string;
     tiles!: string; //serialized from Map<string, Tile>
 }

@@ -12,7 +12,7 @@ import { createServer } from 'http';
 export class Game {
 
     players: Player[];
-    emails: Map<string, string>;
+    usernames: Map<string, string>;
     playerManager: PlayerManager;
     tiles: Map<string, Tile>;
 
@@ -22,7 +22,7 @@ export class Game {
     authenticatedNamespace: Namespace;
     
     constructor() {
-        this.emails = new Map<string, string>();
+        this.usernames = new Map<string, string>();
         this.playerManager = new PlayerManager(this);
                 
         this.buildTiles();
@@ -60,8 +60,8 @@ export class Game {
     private loadPlayers() {
         this.players = [];
         
-        for(let email of this.playerManager.players.keys()) {
-            const player = this.playerManager.getPlayer(email);
+        for(let username of this.playerManager.players.keys()) {
+            const player = this.playerManager.getPlayer(username);
             player.game = this;
             this.placePlayerOnRandomTile(player);
             this.players.push(player);
@@ -113,18 +113,18 @@ export class Game {
     
                 const credentialsString = readFileSync(path, 'utf8');
                 const credentials = JSON.parse(credentialsString) as Credential[];
-                credential.email = credential.email.toLowerCase();
-                const exists = credentials.some(c => c.email === credential.email);
+                credential.username = credential.username.toLowerCase();
+                const exists = credentials.some(c => c.username === credential.username);
     
                 if(exists) {
-                    socket.emit(DungeonEvent.EmailAlreadyTaken);
+                    socket.emit(DungeonEvent.UsernameAlreadyTaken);
                     return;
                 }
 
                 credential.password = hashSync(credential.password);
                 credentials.push(credential);
                 writeFileSync(path, JSON.stringify(credentials));
-                const payload = { email: credential.email };
+                const payload = { username: credential.username };
                 const token = sign(payload, Constants.TOKEN_SECRET);
                 socket.emit(DungeonEvent.Registered, token);
             });
@@ -137,8 +137,8 @@ export class Game {
     
                 const credentialsString = readFileSync(Constants.CREDENTIALS_PATH, 'utf8');
                 const credentials = JSON.parse(credentialsString) as Credential[];
-                credential.email = credential.email.toLowerCase();
-                const existingCredential = credentials.find(c => c.email === credential.email);
+                credential.username = credential.username.toLowerCase();
+                const existingCredential = credentials.find(c => c.username === credential.username);
 
                 if(!existingCredential) {
                     socket.emit(DungeonEvent.LoginFailed);
@@ -152,7 +152,7 @@ export class Game {
                     return;
                 }
 
-                const payload = { email: credential.email };
+                const payload = { username: credential.username };
                 const token = sign(payload, Constants.TOKEN_SECRET);
 
                 socket.emit(DungeonEvent.LoginSuccessful, token);
@@ -172,13 +172,13 @@ export class Game {
                 return;
             }
 
-            this.emails.set(socket.id, payload.email);
+            this.usernames.set(socket.id, payload.username);
             next();
         });
 
         this.authenticatedNamespace.on(DungeonEvent.Connection, socket => {
-            const email = this.emails.get(socket.id);
-            let player = this.players.find(player => player.email === email);
+            const username = this.usernames.get(socket.id);
+            let player = this.players.find(player => player.username === username);
 
             if(player?.socket) {
                 socket.emit(DungeonEvent.PlayerAlreadyHasSocket);
@@ -188,7 +188,7 @@ export class Game {
             if(!player) {
                 player = new Player();
                 this.players.push(player);
-                player.email = email;
+                player.username = username;
                 player.game = this;
                 player.setAvatar();
                 this.placePlayerOnRandomTile(player);

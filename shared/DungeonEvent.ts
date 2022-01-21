@@ -8,7 +8,7 @@ export class DungeonEvent {
     // auth events
     public static readonly Register = "Register";
     public static readonly Registered = "Registered";
-    public static readonly EmailAlreadyTaken = "EmailAlreadyTaken";
+    public static readonly UsernameAlreadyTaken = "UsernameAlreadyTaken";
     public static readonly Login = "Login";
     public static readonly LoginFailed = "LoginFailed";
     public static readonly LoginSuccessful = "LoginSuccessful";

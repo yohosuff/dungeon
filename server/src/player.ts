@@ -4,7 +4,7 @@ import { DungeonEvent, HelloDto, PlayerDto, Position } from "../../shared";
 
 export class Player {
     
-    email: string;
+    username: string;
     game: Game;
     socket: Socket;
     position: Position;
@@ -16,7 +16,7 @@ export class Player {
 
     // temporary code to get started
     setAvatar() {
-        if(this.email.indexOf('joey') > -1) {
+        if(this.username.indexOf('joey') > -1) {
             this.avatar = 'brad';
         } else {
             this.avatar = 'jack';
@@ -25,7 +25,7 @@ export class Player {
 
     static reconstruct(data: PlayerDto) {
         const player = new Player();
-        player.email = data.email;
+        player.username = data.username;
         player.position = Position.reconstruct(data.position);
         player.direction = data.direction;
         player.avatar = data.avatar;
@@ -44,7 +44,7 @@ export class Player {
         socket.on(DungeonEvent.Hello, () => {
             const helloDto = new HelloDto();
             helloDto.players = this.game.players.map(player => player.getDto());
-            helloDto.email = this.email;
+            helloDto.username = this.username;
             helloDto.tiles = JSON.stringify(Array.from(this.game.tiles.entries()));
             socket.emit(DungeonEvent.Hello, helloDto);
         });
@@ -87,7 +87,7 @@ export class Player {
 
         socket.on(DungeonEvent.Disconnect, () => {
             this.socket = undefined;
-            socket.broadcast.emit(DungeonEvent.PlayerLeft, this.email);
+            socket.broadcast.emit(DungeonEvent.PlayerLeft, this.username);
         });
     }
 
@@ -109,7 +109,7 @@ export class Player {
     getDto() {
         const dto = new PlayerDto();
         dto.position = this.position;
-        dto.email = this.email;
+        dto.username = this.username;
         dto.direction = this.direction;
         dto.avatar = this.avatar;
         dto.pressingKey = this.pressingKey;

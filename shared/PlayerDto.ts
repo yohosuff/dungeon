@@ -6,7 +6,7 @@ export class PlayerDto {
     position!: Position;
     animatedPosition!: Position;
     
-    email!: string;
+    username!: string;
     action!: string;
     direction!: string;
     avatar!: string;
@@ -62,7 +62,7 @@ export class PlayerDto {
         const dto = new PlayerDto();
         dto.position = Position.reconstruct(data.position);
         dto.lastPosition = dto.position.clone();
-        dto.email = data.email;
+        dto.username = data.username;
         dto.action = `face-${data.direction}`;
         dto.direction = data.direction;
         dto.avatar = data.avatar;

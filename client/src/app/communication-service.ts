@@ -63,8 +63,8 @@ export class CommunicationService {
             Swal.fire('Login failed.');
         });
 
-        anonymousSocket.on(DungeonEvent.EmailAlreadyTaken, () => {
-            Swal.fire('Email already taken.');
+        anonymousSocket.on(DungeonEvent.UsernameAlreadyTaken, () => {
+            Swal.fire('Username already taken.');
         });
 
         anonymousSocket.on(DungeonEvent.LoginSuccessful, token => {
@@ -92,13 +92,14 @@ export class CommunicationService {
         }
 
         authenticatedSocket = io(`${Constants.ServerUrl}/authenticated`, { auth: { token } });
-
+        localStorage.removeItem(Constants.DungeonToken);
         this.authenticatedSocket = authenticatedSocket;
 
         authenticatedSocket.on(DungeonEvent.ConnectError, (error: Error) => {
             console.warn('could not connect authenticated socket with token', token);
             console.warn(error);
             authenticatedSocket.removeAllListeners();
+
             this.establishAnonymousSocketConnection();
         });
 
@@ -133,8 +134,8 @@ export class CommunicationService {
             this.messageBus.publish(ClientEvent.ServerUpdatedPlayer, playerDto);
         });
 
-        authenticatedSocket.on(DungeonEvent.PlayerLeft, (email: string) => {
-            console.log('player left', email);
+        authenticatedSocket.on(DungeonEvent.PlayerLeft, (username: string) => {
+            console.log(`${username} left`);
         });
 
         authenticatedSocket.on(DungeonEvent.Disconnect, () => {

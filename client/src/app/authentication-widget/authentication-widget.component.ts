@@ -21,7 +21,7 @@ export class AuthenticationWidgetComponent {
     public playerManager: PlayerManager,
   ) {
     this.form = this._formBuilder.group({
-      email: ['', Validators.email],
+      username: ['', Validators.required],
       password: ['', Validators.required],
     });
   }
@@ -34,9 +34,9 @@ export class AuthenticationWidgetComponent {
   }
 
   login() {
-    const email = this.form.get('email')?.value;
+    const username = this.form.get('username')?.value;
     const password = this.form.get('password')?.value;
-    this.communicationService.anonymousSocket.emit(DungeonEvent.Login, { email, password });
+    this.communicationService.anonymousSocket.emit(DungeonEvent.Login, { username, password });
     this.getModalInstance('loginModal').hide();
   }
 
@@ -52,9 +52,9 @@ export class AuthenticationWidgetComponent {
   }
 
   register() {
-    const email = this.form.get('email')?.value;
+    const username = this.form.get('username')?.value;
     const password = this.form.get('password')?.value;
-    this.communicationService.anonymousSocket.emit(DungeonEvent.Register, { email, password });
+    this.communicationService.anonymousSocket.emit(DungeonEvent.Register, { username, password });
     this.getModalInstance('registerModal').hide();
   }
 

@@ -4,7 +4,7 @@
 
 <div *ngIf="communicationService.authenticatedSocketConnected" class="d-flex align-items-baseline">
     <button type="button" class="btn btn-primary" (click)="logout()"> Logout </button>
-    <div class="ms-2 text-info">{{playerManager.me.email}}</div>
+    <div class="ms-2 text-info">{{playerManager.me.username}}</div>
 </div>
 
 <div *ngIf="communicationService.anonymousSocketConnected">
@@ -19,7 +19,7 @@
                 <div class="modal-body">
                     <form [formGroup]="form">
                         <div class="mb-3">
-                            <input type="email" placeholder="Email" class="form-control" formControlName="email">
+                            <input type="text" placeholder="Username" class="form-control" formControlName="username">
                         </div>
                         <div class="mb-3">
                             <input type="password" placeholder="Password" class="form-control" formControlName="password">
@@ -45,7 +45,7 @@
                 <div class="modal-body">
                     <form [formGroup]="form">
                         <div class="mb-3">
-                            <input type="email" placeholder="Email" class="form-control" formControlName="email">
+                            <input type="text" placeholder="Username" class="form-control" formControlName="username">
                         </div>
                         <div class="mb-3">
                             <input type="password" placeholder="Password" class="form-control" formControlName="password">
