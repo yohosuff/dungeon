@@ -66,6 +66,8 @@ export class Renderer {
                 player.pressingKey ? player.getFrameIndex() : 0,
                 player.getDirectionIndex() ?? 2,
                 player.animatedPosition);
+
+            this.drawUsername(context, player);
         }
 
         this.drawSprite(
@@ -94,6 +96,8 @@ export class Renderer {
                 player.pressingKey ? player.getFrameIndex() : 0,
                 player.getDirectionIndex() ?? 2,
                 player.animatedPosition);
+
+            this.drawUsername(context, player);
         }
 
         for(let tile of this.camera.visibleTiles.filter(tile => !tile.inFOV)) {
@@ -137,5 +141,14 @@ export class Renderer {
             this.spriteSize,
             this.spriteSize,
         );
+    }
+
+    drawUsername(context: CanvasRenderingContext2D, player: PlayerDto) {
+        context.font = 'bold 14px Arial';
+        const x = player.animatedPosition.x - this.camera.position.x + this.camera.radius;
+        const y = player.animatedPosition.y - this.camera.position.y + this.camera.radius;
+        context.fillStyle = 'deeppink';
+        context.textAlign = 'center';
+        context.fillText(player.username, x * this.tileSize + this.spriteSize / 4, y * this.tileSize - 20);
     }
 }

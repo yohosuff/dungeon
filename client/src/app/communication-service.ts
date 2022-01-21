@@ -92,14 +92,13 @@ export class CommunicationService {
         }
 
         authenticatedSocket = io(`${Constants.ServerUrl}/authenticated`, { auth: { token } });
-        localStorage.removeItem(Constants.DungeonToken);
         this.authenticatedSocket = authenticatedSocket;
 
         authenticatedSocket.on(DungeonEvent.ConnectError, (error: Error) => {
             console.warn('could not connect authenticated socket with token', token);
             console.warn(error);
             authenticatedSocket.removeAllListeners();
-
+            localStorage.removeItem(Constants.DungeonToken);
             this.establishAnonymousSocketConnection();
         });
 
