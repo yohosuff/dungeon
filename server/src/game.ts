@@ -123,7 +123,7 @@ export class Game {
 
                 credential.password = hashSync(credential.password);
                 credentials.push(credential);
-                writeFileSync(path, JSON.stringify(credentials));
+                writeFileSync(path, JSON.stringify(credentials, null, 2));
                 const payload = { username: credential.username };
                 const token = sign(payload, Constants.TOKEN_SECRET);
                 socket.emit(DungeonEvent.Registered, token);
