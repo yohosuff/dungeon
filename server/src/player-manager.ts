@@ -29,11 +29,11 @@ export class PlayerManager {
         }
 
         const playersJson = readFileSync(Constants.PLAYERS_PATH, 'utf8');
-        const playersDtos = JSON.parse(playersJson) as Array<PlayerDto>;
+        const playersDatas = JSON.parse(playersJson) as Array<PlayerDto>;
         const players = new Map<string, Player>();
 
-        for(let playerDto of playersDtos) {
-            const player = Player.reconstruct(playerDto);
+        for(let playerData of playersDatas) {
+            const player = Player.reconstruct(playerData);
             players.set(player.username, player);
         }
 
@@ -41,8 +41,8 @@ export class PlayerManager {
     }
     
     savePlayers(players: Map<string, Player>) {
-        const playersDtos = Array.from(players.values()).map(player => player.getDto());
-        const playersJson = JSON.stringify(playersDtos);
+        const playersDatas = Array.from(players.values()).map(player => player.getData());
+        const playersJson = JSON.stringify(playersDatas, null, 2);
         
         if(!existsSync(Constants.PLAYERS_PATH)) {
             const directoryPath = Constants.PLAYERS_PATH.substring(0, Constants.PLAYERS_PATH.lastIndexOf('/'));

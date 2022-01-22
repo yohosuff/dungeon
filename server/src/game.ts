@@ -65,7 +65,7 @@ export class Game {
             player.game = this;
             this.placePlayerOnRandomTile(player);
             this.players.push(player);
-            console.log('loaded player', player.getDto());
+            console.log('loaded player', player.getData());
         }
     }
 

@@ -1,6 +1,7 @@
 import { Socket } from "socket.io";
-import { Game } from "./Game";
+import { Game } from "./game";
 import { DungeonEvent, HelloDto, PlayerDto, Position } from "../../shared";
+import { PlayerData } from "./player-data";
 
 export class Player {
     
@@ -23,7 +24,7 @@ export class Player {
         }
     }
 
-    static reconstruct(data: PlayerDto) {
+    static reconstruct(data: PlayerData) {
         const player = new Player();
         player.username = data.username;
         player.position = Position.reconstruct(data.position);
@@ -114,5 +115,14 @@ export class Player {
         dto.avatar = this.avatar;
         dto.pressingKey = this.pressingKey;
         return dto;
+    }
+
+    getData() {
+        const data = new PlayerData();
+        data.position = this.position;
+        data.username = this.username;
+        data.direction = this.direction;
+        data.avatar = this.avatar;
+        return data;
     }
 }
