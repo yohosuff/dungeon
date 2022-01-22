@@ -5,6 +5,7 @@ import { DungeonEvent, HelloDto, PlayerDto } from "../../../shared";
 import { ClientEvent } from "./client-event";
 import { Constants } from "./constants";
 import { MessageBus } from "./message-bus";
+import { Player } from "./player";
 
 @Injectable({
     providedIn: 'root'
@@ -119,18 +120,20 @@ export class CommunicationService {
         });
 
         authenticatedSocket.on(DungeonEvent.Hello, (helloDto: HelloDto) => {
-            helloDto.players = helloDto.players.map(p => PlayerDto.reconstruct(p));
-            this.messageBus.publish(ClientEvent.ServerSaidHello, helloDto);
+            const players = helloDto.players.map(p => Player.reconstruct(p));
+            const tiles = helloDto.tiles;
+            const username = helloDto.username;
+            this.messageBus.publish(ClientEvent.ServerSaidHello, { players, tiles, username });
         });
 
         authenticatedSocket.on(DungeonEvent.PlayerJoined, (playerDto: PlayerDto) => {
-            playerDto = PlayerDto.reconstruct(playerDto);
-            this.messageBus.publish(ClientEvent.ServerAddedPlayer, playerDto);
+            const player = Player.reconstruct(playerDto);
+            this.messageBus.publish(ClientEvent.ServerAddedPlayer, player);
         });
 
         authenticatedSocket.on(DungeonEvent.UpdatePlayer, (playerDto: PlayerDto) => {
-            playerDto = PlayerDto.reconstruct(playerDto);
-            this.messageBus.publish(ClientEvent.ServerUpdatedPlayer, playerDto);
+            const player = Player.reconstruct(playerDto);
+            this.messageBus.publish(ClientEvent.ServerUpdatedPlayer, player);
         });
 
         authenticatedSocket.on(DungeonEvent.PlayerLeft, (username: string) => {

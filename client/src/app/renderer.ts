@@ -4,6 +4,7 @@ import { Camera } from "./camera";
 import { PlayerManager } from "./player-manager";
 import { ImageManager as ImageManager } from "./image-manager";
 import { TileManager } from "./tile-manager";
+import { Player } from "./player";
 
 @Injectable({
     providedIn: 'root'
@@ -143,7 +144,7 @@ export class Renderer {
         );
     }
 
-    drawUsername(context: CanvasRenderingContext2D, player: PlayerDto) {
+    drawUsername(context: CanvasRenderingContext2D, player: Player) {
         context.font = 'bold 14px Arial';
         const x = player.animatedPosition.x - this.camera.position.x + this.camera.radius;
         const y = player.animatedPosition.y - this.camera.position.y + this.camera.radius;

@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { PlayerDto } from "../../../shared";
 import { ClientEvent } from "./client-event";
 import { MessageBus } from "./message-bus";
+import { Player } from "./player";
 import { TileManager } from "./tile-manager";
 
 @Injectable({
@@ -9,18 +10,18 @@ import { TileManager } from "./tile-manager";
 })
 export class PlayerManager {
     
-    me!: PlayerDto;
-    otherPlayers!: PlayerDto[];
+    me!: Player;
+    otherPlayers!: Player[];
     
     constructor(
         private messageBus: MessageBus,
         private tileManager: TileManager
     ) {
-        this.me = new PlayerDto();
+        this.me = new Player();
         this.otherPlayers = [];
 
-        this.messageBus.subscribe(ClientEvent.ServerAddedPlayer, (playerDto: PlayerDto) => {
-            this.addPlayer(playerDto);
+        this.messageBus.subscribe(ClientEvent.ServerAddedPlayer, (player: Player) => {
+            this.addPlayer(player);
         });
 
         this.messageBus.subscribe(ClientEvent.ServerUpdatedPlayer, (playerDto: PlayerDto) => {
@@ -82,17 +83,17 @@ export class PlayerManager {
         this.messageBus.publish(ClientEvent.ClientUpdatedPlayer, player);
     }
 
-    addPlayer(playerDto: PlayerDto) {
-        const existingPlayer = this.otherPlayers.find(player => player.username === playerDto.username);
+    addPlayer(player: Player) {
+        const existingPlayer = this.otherPlayers.find(p => p.username === player.username);
 
         if(existingPlayer) {
             return;
         }
 
-        this.otherPlayers.push(playerDto);
+        this.otherPlayers.push(player);
     }
 
-    loadPlayers(players: PlayerDto[], username: string) {
+    loadPlayers(players: Player[], username: string) {
         this.otherPlayers = [];
 
         for (let player of players) {

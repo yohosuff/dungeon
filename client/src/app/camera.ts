@@ -1,10 +1,11 @@
 import { Injectable } from "@angular/core";
-import { PlayerDto, Position, Tile } from "../../../shared";
+import { Position, Tile } from "../../../shared";
 import { ClientEvent } from "./client-event";
 import { MessageBus } from "./message-bus";
 import { PlayerManager } from "./player-manager";
 import { TileManager } from "./tile-manager";
 import * as ROT from 'rot-js';
+import { Player } from "./player";
 
 @Injectable({
     providedIn: 'root'
@@ -14,7 +15,7 @@ export class Camera {
     radius = 8;
 
     visibleTiles!: Tile[];
-    visiblePlayers!: PlayerDto[];
+    visiblePlayers!: Player[];
 
     left!: number;
     right!: number;
@@ -34,7 +35,7 @@ export class Camera {
         this.refreshVisibleTiles();
         this.updateCoordinatesInFOV();
 
-        this.messageBus.subscribe(ClientEvent.ClientUpdatedPlayer, (player: PlayerDto) => {
+        this.messageBus.subscribe(ClientEvent.ClientUpdatedPlayer, (player: Player) => {
             this.refreshVisiblePlayers();
         });
     }

@@ -13,7 +13,6 @@ export class Player {
     avatar: string;
     pressingKey: boolean;
 
-    constructor() {}
 
     // temporary code to get started
     setAvatar() {
@@ -109,11 +108,11 @@ export class Player {
 
     getDto() {
         const dto = new PlayerDto();
-        dto.position = this.position;
         dto.username = this.username;
+        dto.position = this.position;
         dto.direction = this.direction;
-        dto.avatar = this.avatar;
         dto.pressingKey = this.pressingKey;
+        dto.avatar = this.avatar; // this shouldn't change much... might not need to send it with every update
         return dto;
     }
 

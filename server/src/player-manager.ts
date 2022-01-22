@@ -2,7 +2,7 @@ import { Player } from "./Player";
 import { existsSync, writeFileSync, readFileSync, mkdirSync } from 'fs';
 import { Constants } from "./constants";
 import { Game } from "./Game";
-import { PlayerDto } from "../../shared";
+import { PlayerData } from "./player-data";
 
 export class PlayerManager {
     
@@ -29,7 +29,7 @@ export class PlayerManager {
         }
 
         const playersJson = readFileSync(Constants.PLAYERS_PATH, 'utf8');
-        const playersDatas = JSON.parse(playersJson) as Array<PlayerDto>;
+        const playersDatas = JSON.parse(playersJson) as Array<PlayerData>;
         const players = new Map<string, Player>();
 
         for(let playerData of playersDatas) {

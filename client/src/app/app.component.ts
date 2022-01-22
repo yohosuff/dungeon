@@ -10,6 +10,7 @@ import { PlayerManager } from './player-manager';
 import { TileManager } from './tile-manager';
 import { Renderer } from './renderer';
 import screenfull from 'screenfull';
+import { Player } from './player';
 
 @Component({
   selector: 'app-root',
@@ -42,10 +43,10 @@ export class AppComponent {
       this.communicationService.establishAnonymousSocketConnection();
     }
 
-    this.messageBus.subscribe(ClientEvent.ServerSaidHello, (helloDto: HelloDto) => {
+    this.messageBus.subscribe(ClientEvent.ServerSaidHello, (data: { players: Player[]; tiles: string; username: string; }) => {
       this.renderer.setCanvas(this.canvasElementRef.nativeElement);
-      this.playerManager.loadPlayers(helloDto.players, helloDto.username);
-      this.tileManager.loadTiles(helloDto.tiles);
+      this.playerManager.loadPlayers(data.players, data.username);
+      this.tileManager.loadTiles(data.tiles);
       this.camera.moveToPosition(this.playerManager.me.position);
       window.requestAnimationFrame(this.loop.bind(this));
     });
