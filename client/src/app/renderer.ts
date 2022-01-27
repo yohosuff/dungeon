@@ -148,10 +148,9 @@ export class Renderer {
         const localPosition = this.camera.getLocalPosition(player.animatedPosition);
         const x = localPosition.x * this.tileSize + this.spriteSize / 4;
         const y = localPosition.y * this.tileSize - 20;
-        
         context.font = 'bold 16px Arial';
         context.textAlign = 'center';
-        context.fillStyle = 'deeppink';
+        context.fillStyle = player.connected ? 'green' : 'red';
         context.strokeStyle = 'white';
         context.strokeText(player.username, x, y)
         context.fillText(player.username, x, y);

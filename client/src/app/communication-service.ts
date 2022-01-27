@@ -137,7 +137,7 @@ export class CommunicationService {
         });
 
         authenticatedSocket.on(DungeonEvent.PlayerLeft, (username: string) => {
-            console.log(`${username} left`);
+            this.messageBus.publish(ClientEvent.ServerRemovedPlayer, username);
         });
 
         authenticatedSocket.on(DungeonEvent.Disconnect, () => {

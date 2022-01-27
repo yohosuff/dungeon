@@ -87,7 +87,7 @@ export class Player {
 
         socket.on(DungeonEvent.Disconnect, () => {
             this.socket = undefined;
-            socket.broadcast.emit(DungeonEvent.PlayerLeft, this.username);
+            this.emitUpdate();
         });
     }
 
@@ -113,6 +113,7 @@ export class Player {
         dto.direction = this.direction;
         dto.pressingKey = this.pressingKey;
         dto.avatar = this.avatar; // this shouldn't change much... might not need to send it with every update
+        dto.connected = !!this.socket?.connected;
         return dto;
     }
 

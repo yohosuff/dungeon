@@ -15,6 +15,7 @@ export class Player {
     animatedPosition!: Position;
 
     readonly animationDuration = 200;
+    connected!: boolean;
 
     constructor() {
         const directionIndexMap = new Map<string,number>();
@@ -36,6 +37,7 @@ export class Player {
         player.avatar = dto.avatar;
         player.pressingKey = dto.pressingKey;
         player.actionStartTime = performance.now();
+        player.connected = dto.connected;
         return player;
     }
 

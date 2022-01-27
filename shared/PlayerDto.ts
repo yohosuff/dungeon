@@ -6,4 +6,5 @@ export class PlayerDto {
     direction!: string;
     avatar!: string;
     pressingKey!: boolean;
+    connected!: boolean;
 }

@@ -24,11 +24,22 @@ export class PlayerManager {
             this.addPlayer(player);
         });
 
-        this.messageBus.subscribe(ClientEvent.ServerUpdatedPlayer, (playerDto: PlayerDto) => {
-            if (playerDto.username === this.me.username) {
-                this.messageBus.publish(ClientEvent.ServerUpdatedMe, playerDto);
+        this.messageBus.subscribe(ClientEvent.ServerRemovedPlayer, (username: string) => {
+            const player = this.otherPlayers.find(player => player.username === username);
+            
+            if(!player) {
+                return;
+            }
+
+            const playerIndex = this.otherPlayers.indexOf(player);
+            this.otherPlayers.splice(playerIndex, 1);
+        });
+
+        this.messageBus.subscribe(ClientEvent.ServerUpdatedPlayer, (player: Player) => {
+            if (player.username === this.me.username) {
+                this.messageBus.publish(ClientEvent.ServerUpdatedMe, player);
             } else {
-                this.updatePlayer(playerDto);
+                this.updatePlayer(player);
             }
         });
     }
@@ -63,22 +74,23 @@ export class PlayerManager {
         this.me.position = newPosition;
     }
 
-    updatePlayer(playerDto: PlayerDto) {
-        let player = this.otherPlayers.find(player => player.username === playerDto.username);
+    updatePlayer(updatedPlayer: Player) {
+        const player = this.otherPlayers.find(player => player.username === updatedPlayer.username);
 
         if (!player) {
             console.warn('received playerDto for player not in otherPlayers list');
             return;
         }
 
-        const moved = !player.position.equals(playerDto.position);
+        const moved = !player.position.equals(updatedPlayer.position);
         
         player.lastPosition = player.position;
-        player.position = playerDto.position;
-        player.direction = playerDto.direction;
+        player.position = updatedPlayer.position;
+        player.direction = updatedPlayer.direction;
         player.actionStartTime = performance.now();
         player.animating = moved;
-        player.pressingKey = playerDto.pressingKey;
+        player.pressingKey = updatedPlayer.pressingKey;
+        player.connected = updatedPlayer.connected;
 
         this.messageBus.publish(ClientEvent.ClientUpdatedPlayer, player);
     }
@@ -87,6 +99,7 @@ export class PlayerManager {
         const existingPlayer = this.otherPlayers.find(p => p.username === player.username);
 
         if(existingPlayer) {
+            this.updatePlayer(player);
             return;
         }
 
