@@ -145,11 +145,15 @@ export class Renderer {
     }
 
     drawUsername(context: CanvasRenderingContext2D, player: Player) {
-        context.font = 'bold 14px Arial';
-        const x = player.animatedPosition.x - this.camera.position.x + this.camera.radius;
-        const y = player.animatedPosition.y - this.camera.position.y + this.camera.radius;
-        context.fillStyle = 'deeppink';
+        context.font = 'bold 16px Arial';
+        const localX = player.animatedPosition.x - this.camera.position.x + this.camera.radius;
+        const localY = player.animatedPosition.y - this.camera.position.y + this.camera.radius;
         context.textAlign = 'center';
-        context.fillText(player.username, x * this.tileSize + this.spriteSize / 4, y * this.tileSize - 20);
+        context.fillStyle = 'deeppink';
+        context.strokeStyle = 'white';
+        const x = localX * this.tileSize + this.spriteSize / 4;
+        const y = localY * this.tileSize - 20;
+        context.strokeText(player.username, x, y)
+        context.fillText(player.username, x, y);
     }
 }
