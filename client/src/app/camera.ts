@@ -40,6 +40,13 @@ export class Camera {
         });
     }
 
+    getLocalPosition(worldPosition: Position) {
+        const localPosition = new Position();
+        localPosition.x = worldPosition.x - this.position.x + this.radius;
+        localPosition.y = worldPosition.y - this.position.y + this.radius;
+        return localPosition;
+    }
+
     refreshBounds() {
         const radiusAdjusted = this.radius + 1;
         this.left = this.position.x - radiusAdjusted;
