@@ -13,14 +13,8 @@ export class Player {
     avatar: string;
     pressingKey: boolean;
 
-
-    // temporary code to get started
     setAvatar() {
-        if(this.username.indexOf('joey') > -1) {
-            this.avatar = 'brad';
-        } else {
-            this.avatar = 'jack';
-        }
+        this.avatar = 'skeleton';
     }
 
     static reconstruct(data: PlayerData) {
