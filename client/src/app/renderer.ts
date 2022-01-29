@@ -48,7 +48,7 @@ export class Renderer {
         this.camera.moveToPosition(me.animatedPosition);
 
         for(let tile of this.camera.visibleTiles.filter(tile => tile.inFOV)) {
-            this.drawTile(context, tile.type === 0 ? 'water' : 'stone', tile.position);
+            this.drawTile(context, tile.type === 0 ? 'wall' : 'floor', tile.position);
         }
 
         this.playerManager.sortOtherPlayersByY();
