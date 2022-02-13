@@ -1,5 +1,4 @@
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
-import { HelloDto } from '../../../shared';
 import { Constants } from './constants';
 import { CommunicationService } from './communication-service';
 import { InputManager } from './input-manager';
@@ -26,28 +25,28 @@ export class AppComponent {
   isTouchDevice = 'ontouchstart' in window;
 
   constructor(
-    public communicationService: CommunicationService,
-    private inputManager: InputManager,
-    private messageBus: MessageBus,
-    public camera: Camera,
-    private playerManager: PlayerManager,
-    private tileManager: TileManager,
-    private renderer: Renderer,
+    public _communicationService: CommunicationService,
+    public _camera: Camera,
+    private _inputManager: InputManager,
+    private _messageBus: MessageBus,
+    private _playerManager: PlayerManager,
+    private _tileManager: TileManager,
+    private _renderer: Renderer,
   ) {
 
     const token = localStorage.getItem(Constants.DungeonToken);
 
     if(token) {
-      this.communicationService.establishAuthenticatedSocketConnection(token);
+      this._communicationService.establishAuthenticatedSocketConnection(token);
     } else {
-      this.communicationService.establishAnonymousSocketConnection();
+      this._communicationService.establishAnonymousSocketConnection();
     }
 
-    this.messageBus.subscribe(ClientEvent.ServerSaidHello, (data: { players: Player[]; tiles: string; username: string; }) => {
-      this.renderer.setCanvas(this.canvasElementRef.nativeElement);
-      this.playerManager.loadPlayers(data.players, data.username);
-      this.tileManager.loadTiles(data.tiles);
-      this.camera.moveToPosition(this.playerManager.me.position);
+    this._messageBus.subscribe(ClientEvent.ServerSaidHello, (data: { players: Player[]; tiles: string; username: string; }) => {
+      this._renderer.setCanvas(this.canvasElementRef.nativeElement);
+      this._playerManager.loadPlayers(data.players, data.username);
+      this._tileManager.loadTiles(data.tiles);
+      this._camera.moveToPosition(this._playerManager.me.position);
       window.requestAnimationFrame(this.loop.bind(this));
     });
   }
@@ -59,8 +58,8 @@ export class AppComponent {
   }
 
   loop() {
-    this.inputManager.handleInput();
-    this.renderer.draw();
+    this._inputManager.handleInput();
+    this._renderer.draw();
     window.requestAnimationFrame(this.loop.bind(this));
   }
 
@@ -71,28 +70,28 @@ export class AppComponent {
 
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
-    this.inputManager.input.set(event.code, true);
+    this._inputManager.input.set(event.code, true);
   }
 
   @HostListener('document:keyup', ['$event'])
   onKeyUp(event: KeyboardEvent) {
-    this.inputManager.input.set(event.code, false);
+    this._inputManager.input.set(event.code, false);
 
     if (event.code === 'KeyP') {
-      console.log('other players', this.playerManager.otherPlayers);
-      console.log('me', this.playerManager.me);
+      console.log('other players', this._playerManager.otherPlayers);
+      console.log('me', this._playerManager.me);
     }
 
     if (event.code === 'KeyM') {
-      this.inputManager.autoMoveRight = !this.inputManager.autoMoveRight;
+      this._inputManager.autoMoveRight = !this._inputManager.autoMoveRight;
     }
   }
 
   touchStart(code: string) {
-    this.inputManager.input.set(code, true);
+    this._inputManager.input.set(code, true);
   }
 
   touchEnd(code: string) {
-    this.inputManager.input.set(code, false);
+    this._inputManager.input.set(code, false);
   }
 }

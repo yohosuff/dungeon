@@ -1,5 +1,4 @@
 import { Injectable } from "@angular/core";
-import { PlayerDto } from "../../../shared";
 import { ClientEvent } from "./client-event";
 import { MessageBus } from "./message-bus";
 import { Player } from "./player";
@@ -14,17 +13,17 @@ export class PlayerManager {
     otherPlayers!: Player[];
     
     constructor(
-        private messageBus: MessageBus,
-        private tileManager: TileManager
+        private _messageBus: MessageBus,
+        private _tileManager: TileManager
     ) {
         this.me = new Player();
         this.otherPlayers = [];
 
-        this.messageBus.subscribe(ClientEvent.ServerAddedPlayer, (player: Player) => {
+        this._messageBus.subscribe(ClientEvent.ServerAddedPlayer, (player: Player) => {
             this.addPlayer(player);
         });
 
-        this.messageBus.subscribe(ClientEvent.ServerRemovedPlayer, (username: string) => {
+        this._messageBus.subscribe(ClientEvent.ServerRemovedPlayer, (username: string) => {
             const player = this.otherPlayers.find(player => player.username === username);
             
             if(!player) {
@@ -35,9 +34,9 @@ export class PlayerManager {
             this.otherPlayers.splice(playerIndex, 1);
         });
 
-        this.messageBus.subscribe(ClientEvent.ServerUpdatedPlayer, (player: Player) => {
+        this._messageBus.subscribe(ClientEvent.ServerUpdatedPlayer, (player: Player) => {
             if (player.username === this.me.username) {
-                this.messageBus.publish(ClientEvent.ServerUpdatedMe, player);
+                this._messageBus.publish(ClientEvent.ServerUpdatedMe, player);
             } else {
                 this.updatePlayer(player);
             }
@@ -64,7 +63,7 @@ export class PlayerManager {
 
         const newPosition = this.me.position.move(direction);
         const playerCollision = this.otherPlayers.some(player => player.position.x === newPosition.x && player.position.y === newPosition.y);
-        const onTile = this.tileManager.isOnTile(newPosition);
+        const onTile = this._tileManager.isOnTile(newPosition);
         const cannotMove = playerCollision || !onTile;
 
         if (cannotMove) {
@@ -92,7 +91,7 @@ export class PlayerManager {
         player.pressingKey = updatedPlayer.pressingKey;
         player.connected = updatedPlayer.connected;
 
-        this.messageBus.publish(ClientEvent.ClientUpdatedPlayer, player);
+        this._messageBus.publish(ClientEvent.ClientUpdatedPlayer, player);
     }
 
     addPlayer(player: Player) {

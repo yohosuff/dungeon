@@ -21,10 +21,10 @@ export class Renderer {
     spriteSize = 64;
 
     constructor(
-        private camera: Camera,
-        private playerManager: PlayerManager,
-        private tileManager: TileManager,
-        private imageManager: ImageManager,
+        private _camera: Camera,
+        private _playerManager: PlayerManager,
+        private _tileManager: TileManager,
+        private _imageManager: ImageManager,
     ) {}
 
     setCanvas(canvas: HTMLCanvasElement) {
@@ -39,23 +39,23 @@ export class Renderer {
     draw() {
         const context = this.secondaryContext;
         const canvas = this.secondaryCanvas;
-        const me = this.playerManager.me;
+        const me = this._playerManager.me;
 
         context.clearRect(0, 0, canvas.width, canvas.height);
 
         me.updateAnimatedPosition();
         
-        this.camera.moveToPosition(me.animatedPosition);
+        this._camera.moveToPosition(me.animatedPosition);
 
-        for(let tile of this.camera.visibleTiles.filter(tile => tile.inFOV)) {
+        for(let tile of this._camera.visibleTiles.filter(tile => tile.inFOV)) {
             this.drawTile(context, tile.type === 0 ? 'wall' : 'floor', tile.position);
         }
 
-        this.playerManager.sortOtherPlayersByY();
+        this._playerManager.sortOtherPlayersByY();
 
-        for(let player of this.playerManager.getOtherPlayersAboveMe()) {
+        for(let player of this._playerManager.getOtherPlayersAboveMe()) {
 
-            if(!this.camera.canSee(player.position)) {
+            if(!this._camera.canSee(player.position)) {
                 continue;
             }
 
@@ -79,9 +79,9 @@ export class Renderer {
             me.animatedPosition,
         );
 
-        for(let player of this.playerManager.getOtherPlayersBelowMe()) {
+        for(let player of this._playerManager.getOtherPlayersBelowMe()) {
 
-            if(!this.camera.canSee(player.position)) {
+            if(!this._camera.canSee(player.position)) {
                 continue;
             }
 
@@ -101,7 +101,7 @@ export class Renderer {
             this.drawUsername(context, player);
         }
 
-        for(let tile of this.camera.visibleTiles.filter(tile => !tile.inFOV)) {
+        for(let tile of this._camera.visibleTiles.filter(tile => !tile.inFOV)) {
             this.drawTile(context, 'black', tile.position);
         }
 
@@ -111,28 +111,28 @@ export class Renderer {
 
     playersHeadIsPokingUp(player: PlayerDto) {
         const positionAbovePlayer = player.position.move('up');
-        const tileAbovePlayerIsWall = this.tileManager.getTileByPosition(positionAbovePlayer)?.type === 0;
-        const tileInFieldOfView = this.camera.coordinatesInFieldOfView.has(player.position.toCoordinateString());
+        const tileAbovePlayerIsWall = this._tileManager.getTileByPosition(positionAbovePlayer)?.type === 0;
+        const tileInFieldOfView = this._camera.coordinatesInFieldOfView.has(player.position.toCoordinateString());
         return !tileInFieldOfView && tileAbovePlayerIsWall;
     }
 
     drawTile(context: CanvasRenderingContext2D, name: string, position: Position) {
-        const dx = position.x - this.camera.position.x + this.camera.radius;
-        const dy = position.y - this.camera.position.y + this.camera.radius;
+        const dx = position.x - this._camera.position.x + this._camera.radius;
+        const dy = position.y - this._camera.position.y + this._camera.radius;
 
         context.drawImage(
-            this.imageManager.getImage(name),
+            this._imageManager.getImage(name),
             dx * this.tileSize,
             dy * this.tileSize,
         );
     }
 
     drawSprite(context: CanvasRenderingContext2D, name: string, sourceX: number, sourceY: number, position: Position) {
-        const x = position.x - this.camera.position.x + this.camera.radius;
-        const y = position.y - this.camera.position.y + this.camera.radius;
+        const x = position.x - this._camera.position.x + this._camera.radius;
+        const y = position.y - this._camera.position.y + this._camera.radius;
 
         context.drawImage(
-            this.imageManager.getImage(name),
+            this._imageManager.getImage(name),
             sourceX * this.spriteSize,
             sourceY * this.spriteSize,
             this.spriteSize,
@@ -145,7 +145,7 @@ export class Renderer {
     }
 
     drawUsername(context: CanvasRenderingContext2D, player: Player) {
-        const localPosition = this.camera.getLocalPosition(player.animatedPosition);
+        const localPosition = this._camera.getLocalPosition(player.animatedPosition);
         const x = localPosition.x * this.tileSize + this.spriteSize / 4;
         const y = localPosition.y * this.tileSize - 20;
         context.font = 'bold 16px Arial';

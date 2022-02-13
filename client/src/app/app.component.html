@@ -3,8 +3,8 @@
   <button class="btn btn-secondary" (click)="toggleFullscreen()">Fullscreen</button>
 </div>
 
-<div class="dungeon" *ngIf="communicationService.authenticatedSocketConnected">
-  <canvas #canvas width="{{(camera.radius * 2 + 1) * 32}}" height="{{(camera.radius * 2 + 1) * 32}}"></canvas>
+<div class="dungeon" *ngIf="_communicationService.authenticatedSocketConnected">
+  <canvas #canvas width="{{(_camera.radius * 2 + 1) * 32}}" height="{{(_camera.radius * 2 + 1) * 32}}"></canvas>
   <div class="d-flex mt-2 w-100 justify-content-center" *ngIf="isTouchDevice">
     <div class="btn btn-secondary d-flex align-items-center justify-content-center navigation-button me-1" (touchstart)="touchStart('ArrowUp')" (touchend)="touchEnd('ArrowUp')">UP</div>
     <div class="btn btn-secondary d-flex align-items-center justify-content-center navigation-button me-1" (touchstart)="touchStart('ArrowDown')" (touchend)="touchEnd('ArrowDown')">DOWN</div>

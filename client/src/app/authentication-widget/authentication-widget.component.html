@@ -1,13 +1,13 @@
-<div *ngIf="!communicationService.anonymousSocketConnected && !communicationService.authenticatedSocketConnected">
+<div *ngIf="!_communicationService.anonymousSocketConnected && !_communicationService.authenticatedSocketConnected">
     Connecting....
 </div>
 
-<div *ngIf="communicationService.authenticatedSocketConnected" class="d-flex align-items-baseline">
+<div *ngIf="_communicationService.authenticatedSocketConnected" class="d-flex align-items-baseline">
     <button type="button" class="btn btn-primary" (click)="logout()"> Logout </button>
-    <div class="ms-2 text-info">{{playerManager.me.username}}</div>
+    <div class="ms-2 text-info">{{_playerManager.me.username}}</div>
 </div>
 
-<div *ngIf="communicationService.anonymousSocketConnected">
+<div *ngIf="_communicationService.anonymousSocketConnected">
     <button type="button" class="btn btn-primary" (click)="showLoginModal()"> Login </button>
     <div class="modal fade" id="loginModal">
         <div class="modal-dialog">

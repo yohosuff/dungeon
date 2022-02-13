@@ -3,7 +3,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Modal } from 'bootstrap';
 import { DungeonEvent } from '../../../../shared'; //use @shared or something here instead of going up all those levels
 import { CommunicationService } from '../communication-service';
-import { Constants } from '../constants';
 import { PlayerManager } from '../player-manager';
 
 @Component({
@@ -17,8 +16,8 @@ export class AuthenticationWidgetComponent {
   
   constructor(
     private _formBuilder: FormBuilder,
-    public communicationService: CommunicationService,
-    public playerManager: PlayerManager,
+    public _communicationService: CommunicationService,
+    public _playerManager: PlayerManager,
   ) {
     this.form = this._formBuilder.group({
       username: ['', Validators.required],
@@ -36,12 +35,12 @@ export class AuthenticationWidgetComponent {
   login() {
     const username = this.form.get('username')?.value;
     const password = this.form.get('password')?.value;
-    this.communicationService.anonymousSocket.emit(DungeonEvent.Login, { username, password });
+    this._communicationService.anonymousSocket.emit(DungeonEvent.Login, { username, password });
     this.getModalInstance('loginModal').hide();
   }
 
   logout() {
-    this.communicationService.logout();
+    this._communicationService.logout();
   }
 
   showRegisterModal() {
@@ -54,7 +53,7 @@ export class AuthenticationWidgetComponent {
   register() {
     const username = this.form.get('username')?.value;
     const password = this.form.get('password')?.value;
-    this.communicationService.anonymousSocket.emit(DungeonEvent.Register, { username, password });
+    this._communicationService.anonymousSocket.emit(DungeonEvent.Register, { username, password });
     this.getModalInstance('registerModal').hide();
   }
 

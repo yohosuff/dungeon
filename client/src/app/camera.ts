@@ -24,9 +24,9 @@ export class Camera {
     coordinatesInFieldOfView!: Set<string>;
 
     constructor(
-        private tileManager: TileManager,
-        private playerManager: PlayerManager,
-        private messageBus: MessageBus,
+        private _tileManager: TileManager,
+        private _playerManager: PlayerManager,
+        private _messageBus: MessageBus,
     ) {
         this.position = new Position();
 
@@ -35,7 +35,7 @@ export class Camera {
         this.refreshVisibleTiles();
         this.updateCoordinatesInFOV();
 
-        this.messageBus.subscribe(ClientEvent.ClientUpdatedPlayer, (player: Player) => {
+        this._messageBus.subscribe(ClientEvent.ClientUpdatedPlayer, (player: Player) => {
             this.refreshVisiblePlayers();
         });
     }
@@ -67,7 +67,7 @@ export class Camera {
         for(let x = left; x <= right; ++x) {
             for(let y = top; y <= bottom; ++y) {
                 
-                const tile = this.tileManager.getTileByXY(x, y);
+                const tile = this._tileManager.getTileByXY(x, y);
 
                 if(!tile) {
                     continue;
@@ -84,7 +84,7 @@ export class Camera {
 
     updateCoordinatesInFOV() {
         const fieldOfView = new ROT.FOV.PreciseShadowcasting((x, y) => {
-            const tile = this.tileManager.getTileByXY(x, y);
+            const tile = this._tileManager.getTileByXY(x, y);
 
             if(!tile) {
                 return false;
@@ -113,7 +113,7 @@ export class Camera {
     refreshVisiblePlayers() {
         const visiblePlayers = [];
         
-        for(let player of this.playerManager.otherPlayers) {
+        for(let player of this._playerManager.otherPlayers) {
             const visible = this.canSee(player.position);
 
             if(visible) {

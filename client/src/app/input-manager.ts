@@ -16,8 +16,8 @@ export class InputManager {
     nextMoveTime: number;
     
     constructor(
-        private playerManager: PlayerManager,
-        private communicationService: CommunicationService,
+        private _playerManager: PlayerManager,
+        private _communicationService: CommunicationService,
     ) {
         this.nextMoveTime = 0;
         this.input = new Map<string, boolean>();
@@ -42,7 +42,7 @@ export class InputManager {
     }
 
     handleInput() {
-        if(performance.now() < this.nextMoveTime || this.communicationService.waitingForServer) {
+        if(performance.now() < this.nextMoveTime || this._communicationService.waitingForServer) {
             return;
         }
 
@@ -57,12 +57,12 @@ export class InputManager {
             }
         }
 
-        const me = this.playerManager.me;
+        const me = this._playerManager.me;
 
         if(!chosenDirection) {
 
             if(me.pressingKey) {
-                this.communicationService.authenticatedSocket.emit(DungeonEvent.ChangeDirection, me.direction);
+                this._communicationService.authenticatedSocket.emit(DungeonEvent.ChangeDirection, me.direction);
             }
 
             me.pressingKey = false;
@@ -73,9 +73,9 @@ export class InputManager {
         me.direction = chosenDirection;
         me.action === `walk-${chosenDirection}`;
 
-        this.playerManager.moveMe(chosenDirection);
+        this._playerManager.moveMe(chosenDirection);
         this.nextMoveTime = performance.now() + 200;       
-        this.communicationService.waitingForServer = true;
-        this.communicationService.authenticatedSocket.emit(DungeonEvent.Move, chosenDirection);
+        this._communicationService.waitingForServer = true;
+        this._communicationService.authenticatedSocket.emit(DungeonEvent.Move, chosenDirection);
     }
 }

@@ -21,13 +21,13 @@ export class CommunicationService {
     waitingForServer: boolean;
 
     constructor(
-        private messageBus: MessageBus,
+        private _messageBus: MessageBus,
     ) {
         this.anonymousSocketConnected = false;
         this.authenticatedSocketConnected = false;
         this.waitingForServer = false;
 
-        this.messageBus.subscribe(ClientEvent.ServerUpdatedMe, (playerDto: PlayerDto) => {
+        this._messageBus.subscribe(ClientEvent.ServerUpdatedMe, (playerDto: PlayerDto) => {
             this.waitingForServer = false;
         });
     }
@@ -123,21 +123,21 @@ export class CommunicationService {
             const players = helloDto.players.map(p => Player.reconstruct(p));
             const tiles = helloDto.tiles;
             const username = helloDto.username;
-            this.messageBus.publish(ClientEvent.ServerSaidHello, { players, tiles, username });
+            this._messageBus.publish(ClientEvent.ServerSaidHello, { players, tiles, username });
         });
 
         authenticatedSocket.on(DungeonEvent.PlayerJoined, (playerDto: PlayerDto) => {
             const player = Player.reconstruct(playerDto);
-            this.messageBus.publish(ClientEvent.ServerAddedPlayer, player);
+            this._messageBus.publish(ClientEvent.ServerAddedPlayer, player);
         });
 
         authenticatedSocket.on(DungeonEvent.UpdatePlayer, (playerDto: PlayerDto) => {
             const player = Player.reconstruct(playerDto);
-            this.messageBus.publish(ClientEvent.ServerUpdatedPlayer, player);
+            this._messageBus.publish(ClientEvent.ServerUpdatedPlayer, player);
         });
 
         authenticatedSocket.on(DungeonEvent.PlayerLeft, (username: string) => {
-            this.messageBus.publish(ClientEvent.ServerRemovedPlayer, username);
+            this._messageBus.publish(ClientEvent.ServerRemovedPlayer, username);
         });
 
         authenticatedSocket.on(DungeonEvent.Disconnect, () => {
