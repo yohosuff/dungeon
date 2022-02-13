@@ -1,141 +1,141 @@
-import { Injectable } from "@angular/core";
-import { Position, Tile } from "../../../shared";
-import { ClientEvent } from "./client-event";
-import { MessageBus } from "./message-bus";
-import { PlayerManager } from "./player-manager";
-import { TileManager } from "./tile-manager";
+import { Injectable } from '@angular/core';
+import { Position, Tile } from '../../../shared';
+import { ClientEvent } from './client-event';
+import { MessageBus } from './message-bus';
+import { PlayerManager } from './player-manager';
+import { TileManager } from './tile-manager';
 import * as ROT from 'rot-js';
-import { Player } from "./player";
+import { Player } from './player';
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 export class Camera {
-    position!: Position;
-    radius = 8;
+  position!: Position;
+  radius = 8;
 
-    visibleTiles!: Tile[];
-    visiblePlayers!: Player[];
+  visibleTiles!: Tile[];
+  visiblePlayers!: Player[];
 
-    left!: number;
-    right!: number;
-    top!: number;
-    bottom!: number;
-    coordinatesInFieldOfView!: Set<string>;
+  left!: number;
+  right!: number;
+  top!: number;
+  bottom!: number;
+  coordinatesInFieldOfView!: Set<string>;
 
-    constructor(
+  constructor(
         private _tileManager: TileManager,
         private _playerManager: PlayerManager,
         private _messageBus: MessageBus,
-    ) {
-        this.position = new Position();
+  ) {
+    this.position = new Position();
 
-        this.refreshBounds();
-        this.refreshVisiblePlayers();
-        this.refreshVisibleTiles();
-        this.updateCoordinatesInFOV();
+    this.refreshBounds();
+    this.refreshVisiblePlayers();
+    this.refreshVisibleTiles();
+    this.updateCoordinatesInFOV();
 
-        this._messageBus.subscribe(ClientEvent.ClientUpdatedPlayer, (player: Player) => {
-            this.refreshVisiblePlayers();
-        });
-    }
+    this._messageBus.subscribe(ClientEvent.ClientUpdatedPlayer, () => {
+      this.refreshVisiblePlayers();
+    });
+  }
 
-    getLocalPosition(worldPosition: Position) {
-        const localPosition = new Position();
-        localPosition.x = worldPosition.x - this.position.x + this.radius;
-        localPosition.y = worldPosition.y - this.position.y + this.radius;
-        return localPosition;
-    }
+  getLocalPosition(worldPosition: Position) {
+    const localPosition = new Position();
+    localPosition.x = worldPosition.x - this.position.x + this.radius;
+    localPosition.y = worldPosition.y - this.position.y + this.radius;
+    return localPosition;
+  }
 
-    refreshBounds() {
-        const radiusAdjusted = this.radius + 1;
-        this.left = this.position.x - radiusAdjusted;
-        this.right = this.position.x + radiusAdjusted;
-        this.top = this.position.y - radiusAdjusted;
-        this.bottom = this.position.y + radiusAdjusted;
-    }
+  refreshBounds() {
+    const radiusAdjusted = this.radius + 1;
+    this.left = this.position.x - radiusAdjusted;
+    this.right = this.position.x + radiusAdjusted;
+    this.top = this.position.y - radiusAdjusted;
+    this.bottom = this.position.y + radiusAdjusted;
+  }
 
-    refreshVisibleTiles() {
-        const visibleTiles = [];
-        this.updateCoordinatesInFOV();
+  refreshVisibleTiles() {
+    const visibleTiles = [];
+    this.updateCoordinatesInFOV();
 
-        const left = Math.round(this.left);
-        const right = Math.round(this.right);
-        const top = Math.round(this.top);
-        const bottom = Math.round(this.bottom);
+    const left = Math.round(this.left);
+    const right = Math.round(this.right);
+    const top = Math.round(this.top);
+    const bottom = Math.round(this.bottom);
         
-        for(let x = left; x <= right; ++x) {
-            for(let y = top; y <= bottom; ++y) {
+    for(let x = left; x <= right; ++x) {
+      for(let y = top; y <= bottom; ++y) {
                 
-                const tile = this._tileManager.getTileByXY(x, y);
+        const tile = this._tileManager.getTileByXY(x, y);
 
-                if(!tile) {
-                    continue;
-                }
-
-                tile.inFOV = this.coordinatesInFieldOfView.has(`${x},${y}`);
-
-                visibleTiles.push(tile);
-            }
+        if(!tile) {
+          continue;
         }
 
-        this.visibleTiles = visibleTiles;
+        tile.inFOV = this.coordinatesInFieldOfView.has(`${x},${y}`);
+
+        visibleTiles.push(tile);
+      }
     }
 
-    updateCoordinatesInFOV() {
-        const fieldOfView = new ROT.FOV.PreciseShadowcasting((x, y) => {
-            const tile = this._tileManager.getTileByXY(x, y);
+    this.visibleTiles = visibleTiles;
+  }
 
-            if(!tile) {
-                return false;
-            }
+  updateCoordinatesInFOV() {
+    const fieldOfView = new ROT.FOV.PreciseShadowcasting((x, y) => {
+      const tile = this._tileManager.getTileByXY(x, y);
 
-            if(tile.type === 0) {
-                return false;
-            }
+      if(!tile) {
+        return false;
+      }
 
-            return true;
-        });
+      if(tile.type === 0) {
+        return false;
+      }
 
-        const coordinatesInFieldOfView = new Set<string>();
+      return true;
+    });
 
-        const x = Math.round(this.position.x);
-        const y = Math.round(this.position.y);
+    const coordinatesInFieldOfView = new Set<string>();
 
-        fieldOfView.compute(x, y, this.radius + 1, (x, y, r, visibility) => {
-            const coordinateString = `${x},${y}`;
-            coordinatesInFieldOfView.add(coordinateString);
-        });
+    const x = Math.round(this.position.x);
+    const y = Math.round(this.position.y);
 
-        this.coordinatesInFieldOfView = coordinatesInFieldOfView;
-    }
+    fieldOfView.compute(x, y, this.radius + 1, (x, y) => {
+      const coordinateString = `${x},${y}`;
+      coordinatesInFieldOfView.add(coordinateString);
+    });
 
-    refreshVisiblePlayers() {
-        const visiblePlayers = [];
+    this.coordinatesInFieldOfView = coordinatesInFieldOfView;
+  }
+
+  refreshVisiblePlayers() {
+    const visiblePlayers = [];
         
-        for(let player of this._playerManager.otherPlayers) {
-            const visible = this.canSee(player.position);
+    for(const player of this._playerManager.otherPlayers) {
+      const visible = this.canSee(player.position);
 
-            if(visible) {
-                visiblePlayers.push(player);
-            }
-        }
-        
-        this.visiblePlayers = visiblePlayers;
+      if(visible) {
+        visiblePlayers.push(player);
+      }
     }
+        
+    this.visiblePlayers = visiblePlayers;
+  }
 
-    canSee(position: Position) {
-        return position.x >= this.left
+  canSee(position: Position) {
+    return position.x >= this.left
             && position.x <= this.right
             && position.y >= this.top
             && position.y <= this.bottom;
-    }
+  }
 
-    moveToPosition(position: Position) {
-        this.position.x = position.x;
-        this.position.y = position.y;
-        this.refreshBounds();
-        this.refreshVisiblePlayers();
-        this.refreshVisibleTiles();
-    }
+  moveToPosition(position: Position) {
+    this.position.x = position.x;
+    this.position.y = position.y;
+    this.refreshBounds();
+    this.refreshVisiblePlayers();
+    this.refreshVisibleTiles();
+  }
 }

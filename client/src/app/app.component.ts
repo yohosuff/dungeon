@@ -64,7 +64,7 @@ export class AppComponent {
   }
 
   getStopWalkingAction(action: string) {
-    const direction = action.split("-")[1];
+    const direction = action.split('-')[1];
     return `face-${direction}`;
   }
 
