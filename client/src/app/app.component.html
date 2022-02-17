@@ -1,6 +1,9 @@
 <div class="position-absolute top-0 mt-1 d-flex justify-content-between" style="left: 0.25rem; right: 0.25rem">
   <authentication-widget></authentication-widget>
-  <button class="btn btn-secondary" (click)="toggleFullscreen()">Fullscreen</button>
+  <div class="d-flex">
+    <button class="btn btn-warning me-1" (click)="toggleWandering()">Wander - {{_wanderService.wandering ? 'ON' : 'OFF'}}</button>
+    <button class="btn btn-secondary" (click)="toggleFullscreen()">Fullscreen</button>
+  </div>
 </div>
 
 <div class="dungeon" *ngIf="_communicationService.authenticatedSocketConnected">

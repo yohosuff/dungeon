@@ -10,6 +10,7 @@ import { TileManager } from './tile-manager';
 import { Renderer } from './renderer';
 import screenfull from 'screenfull';
 import { Player } from './player';
+import { WanderService } from './wander.service';
 
 @Component({
   selector: 'app-root',
@@ -27,6 +28,7 @@ export class AppComponent {
   constructor(
     public _communicationService: CommunicationService,
     public _camera: Camera,
+    public _wanderService: WanderService,
     private _inputManager: InputManager,
     private _messageBus: MessageBus,
     private _playerManager: PlayerManager,
@@ -47,7 +49,13 @@ export class AppComponent {
       this._playerManager.loadPlayers(data.players, data.username);
       this._tileManager.loadTiles(data.tiles);
       this._camera.moveToPosition(this._playerManager.me.position);
+      this._wanderService.init();
       window.requestAnimationFrame(this.loop.bind(this));
+    });
+
+    this._wanderService.wandered.subscribe(key => {
+      this._inputManager.input.set(key, true);
+      setTimeout(() => this._inputManager.input.set(key, false), 100);
     });
   }
 
@@ -55,6 +63,10 @@ export class AppComponent {
     if (screenfull.isEnabled) {
       screenfull.toggle();
     }
+  }
+
+  toggleWandering() {
+    this._wanderService.toggle();
   }
 
   loop() {
